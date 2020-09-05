@@ -7,7 +7,7 @@ import {
     faAngleDoubleRight,
     faPalette,
 } from '@fortawesome/free-solid-svg-icons'
-import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
+import { Droppable, Draggable } from "react-beautiful-dnd";
 
 
 export default function List({title, colour, rows, addRow, deleteRow, updateRowNumber}){
@@ -22,13 +22,12 @@ export default function List({title, colour, rows, addRow, deleteRow, updateRowN
       });
 
     const getItemStyle = (isDragging, draggableStyle) => ({
-    // some basic styles to make the items look a bit nicer
-    userSelect: "none",
-    padding: "0.5em",
-    //background: isDragging ? "lightgreen" : "grey",
-    
-    // styles we need to apply on draggables
-    ...draggableStyle
+        userSelect: "none",
+        padding: "0.5em",
+        //background: isDragging ? "lightgreen" : "grey",
+        
+        // styles we need to apply on draggables
+        ...draggableStyle
     });
 
     return (

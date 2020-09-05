@@ -1,4 +1,4 @@
-import React, {useState} from "react";
+import React from "react";
 import TitleBar from "./TitleBar";
 import List from "./List";
 import "./Diagnoses.css";
@@ -8,84 +8,115 @@ import {
     faSave,
     faEye,
 } from '@fortawesome/free-solid-svg-icons';
-import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
+import { DragDropContext } from "react-beautiful-dnd";
 
 
-export default function DifferentialDiagnosis(){
-    const pageTitleButtons = [
-        <FontAwesomeIcon icon={faSave} size="3x" style={{cursor: "pointer"}}/>,
-        <FontAwesomeIcon icon={faEye} size="3x" style={{cursor: "pointer"}}/>,
-    ]
+// TODO: get multiple lists working. Use this as a guide: https://codesandbox.io/s/ql08j35j3q?file=/index.js
 
-    const [rows, setRows] = useState([]);
-    const [deletingRow, setDeletingRow] = useState(null);
+class DifferentialDiagnosis extends React.Component {
 
-    const addRow = () => {
-        rows.push("Sample" + rows.length);
-        setRows([...rows]);
+    constructor(props) {
+        super(props)
+
+        this.state = {
+            rows: [],
+            deletingRow: null
+        }
+
+        this.addRow = this.addRow.bind(this);
+        this.deleteRow = this.deleteRow.bind(this);
+        this.updateRowNumber = this.updateRowNumber.bind(this);
+        this.reorder = this.reorder.bind(this);
+        this.onDragEnd = this.onDragEnd.bind(this);
     }
 
-    const deleteRow = (index) => {
-        rows.splice(index, 1);
-        setRows([...rows]);
-        setDeletingRow(null);
+    addRow() {
+        this.state.rows.push("Sample" + this.state.rows.length);
+        this.setState({
+            rows: [...this.state.rows]
+        });
     }
 
-    const updateRowNumber = (from, to) => {
+    deleteRow(index) {
+        this.state.rows.splice(index, 1);
+        this.setState({
+            rows: [...this.state.rows],
+            deletingRow: null
+        });
+    }
 
-        if (rows.length < 2) return;
-
+    updateRowNumber(from, to) {
+        if (this.state.rows.length < 2) return;
         // Go to top of list
         if (to < 0) to = 0;
-
         // Go to bottom of list
-        if (to >= rows.length) to = rows.length - 1;
+        if (to >= this.state.rows.length) to = this.state.rows.length - 1;
 
-        const result = reorder(rows, from, to);
-        setRows(result);
+        const result = this.reorder(this.state.rows, from, to);
+        this.setState({
+            rows: result
+        });
     }
 
     // a little function to help us with reordering the result
-    const reorder = (list, startIndex, endIndex) => {
+    reorder(list, startIndex, endIndex) {
         const result = Array.from(list);
         const [removed] = result.splice(startIndex, 1);
         result.splice(endIndex, 0, removed);
-    
         return result;
     };
 
-    const onDragEnd = (result) => {
+    onDragEnd(result) {
         // dropped outside the list
         if (!result.destination) {
           return;
         }
     
-        const items = reorder(
-          rows,
-          result.source.index,
-          result.destination.index
+        const items = this.reorder(
+            this.state.rows,
+            result.source.index,
+            result.destination.index
         );
     
-        setRows(items);
+        this.setState({
+            rows: items
+        });
       }
 
-    return (
-        <>
-            <TitleBar title="Differential Diagnoses" buttons={pageTitleButtons}/>
-            <div class="listContainer">
-                <DragDropContext onDragEnd={onDragEnd}>
-                    <List title="LIKELY DIAGNOSIS" colour="#5DAD89" rows={rows} addRow={addRow} deleteRow={setDeletingRow} updateRowNumber={updateRowNumber}/>
-                </DragDropContext>
-            </div>
+    render() {
 
-            {(deletingRow || deletingRow == 0) &&
-                <Popup
-                    title="Are you sure you want to delete this diagnosis?"
-                    yesCallback={() => deleteRow(deletingRow)}
-                    noCallback={() => setDeletingRow(null)}
-                >
-                    {rows[deletingRow]}
-                </Popup>}
-        </>
-    );
+        const pageTitleButtons = [
+            <FontAwesomeIcon icon={faSave} size="3x" style={{cursor: "pointer"}}/>,
+            <FontAwesomeIcon icon={faEye} size="3x" style={{cursor: "pointer"}}/>,
+        ]
+
+        return (
+            <>
+                <TitleBar title="Differential Diagnoses" buttons={pageTitleButtons}/>
+                <div class="listContainer">
+                    <DragDropContext onDragEnd={this.onDragEnd}>
+                        <List
+                            title="Likely Diagnoses"
+                            colour="#5DAD89"
+                            rows={this.state.rows}
+                            addRow={this.addRow}
+                            deleteRow={(index) => this.setState({deletingRow: index})}
+                            updateRowNumber={this.updateRowNumber}
+                            />
+                    </DragDropContext>
+                </div>
+
+                {(this.state.deletingRow || this.state.deletingRow == 0) &&
+                    <Popup
+                        title="Are you sure you want to delete this diagnosis?"
+                        yesCallback={() => this.deleteRow(this.state.deletingRow)}
+                        noCallback={() => this.setState({deletingRow: null})}
+                    >
+                        {this.state.rows[this.state.deletingRow]}
+                    </Popup>}
+            </>
+        );
+    }   
 }
+
+export default DifferentialDiagnosis;
