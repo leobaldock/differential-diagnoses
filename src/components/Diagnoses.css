@@ -14,18 +14,19 @@
     display: flex;
     justify-content: center;
     flex-direction: column;
+    font-size: 1.25em;
 }
 .listRow{
     display: flex;
     align-items: stretch;
     max-width: 90%;
     margin: 1em;
-    font-size: 1.25em;
+    font-size: inherit;
 }
 
 .listNumber input{
     height: calc(100% - 1em);
-    width: 2em;
+    width: 2.5em;
     padding: 0.5em;
     text-align: center;
     font-size: inherit;
@@ -33,14 +34,12 @@
 }
 
 .listEntry{
+    display: flex;
     margin: 0 1em;
     flex-grow: 1;
     background-color: white;
     padding: 1em;
-}
-
-.listRow li {
-    background-color: white;
+    align-items: center;
 }
 
 .transferButton{
@@ -54,13 +53,22 @@
     cursor: pointer;
 }
 
+.addRowButton{
+    color: #ffffffA9;
+    padding: 0.5em;
+    text-align: right;
+}
+
+.addRowButton:hover{
+    color: #ffffff;
+    cursor: pointer;
+}
+
 
 /* TitleBar Styling */
 .titleBar{
+    text-align: center;
     padding: 1em;
     background-color: #00000060;
     color: white;
-    display: flex;
-    flex-direction: row; 
-    justify-content: space-between;
   }
