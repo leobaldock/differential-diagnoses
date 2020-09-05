@@ -1,0 +1,33 @@
+.listContainer{
+    display: flex;
+    justify-content: center;
+    border: 1px solid red;
+    padding: 2em;
+}
+
+.list{
+    background-color: lightskyblue;
+    width: 50%;
+}
+
+.listRowContainer{
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+}
+
+.listRow{
+    max-width: 90%;
+    margin: 0.5em;
+    background-color: white;
+    padding: 1em;
+}
+
+.titleBar{
+    padding: 1em;
+    background-color: #00000060;
+    color: white;
+    display: flex;
+    flex-direction: row; 
+    justify-content: space-between;
+  }

@@ -3,11 +3,12 @@
  */
 
 import React from "react";
+import DifferentialDiagnoses from "../components/DifferentialDiagnoses"
 
 const Home = (props) => {
   return (
     <div>
-      This is the home page.
+      <DifferentialDiagnoses />
     </div>
   )
 }
