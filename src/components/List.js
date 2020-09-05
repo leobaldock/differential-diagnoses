@@ -1,34 +1,46 @@
 import React from "react";
 import TitleBar from "./TitleBar"
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
-import {faBars} from '@fortawesome/free-solid-svg-icons' 
+import {
+    faBars,
+    faAngleDoubleRight,
+} from '@fortawesome/free-solid-svg-icons' 
 
 export default function List({title, colour}){
 
 
     return (
-        <div class="list" styles={{backgroundColor: colour}}>
+        <div class="list" style={{backgroundColor: colour, color: colour}}>
             <TitleBar title={title}/>
 
             <div class="listRowContainer">
                 <ol>
-                    <li><ListRow/></li>
-                    <li><ListRow/></li>
-                    <li><ListRow/></li>
-                    <li><ListRow/></li>
-                    <li><ListRow/></li>
+                    <li><ListRow colour={colour}/></li>
+                    <li><ListRow colour={colour}/></li>
+                    <li><ListRow colour={colour}/></li>
+                    <li><ListRow colour={colour}/></li>
+                    <li><ListRow colour={colour}/></li>
                 </ol>
             </div>
         </div>
     )
 }
 
-function ListRow(){
+function ListRow({colour}){
 
     return (
         <div class="listRow">
-            <FontAwesomeIcon icon={faBars}/>
-            <span> Sample </span>
+            <div class="listNumber">
+                <input style={{color: colour}} type="text"/>
+            </div>
+            <div class="listEntry">
+                <FontAwesomeIcon icon={faBars}/>
+                <span> Sample </span>
+                
+            </div>
+            <div class="transferButton">
+                <FontAwesomeIcon icon={faAngleDoubleRight} />
+            </div>
         </div>
     )
 }

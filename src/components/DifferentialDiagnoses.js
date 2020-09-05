@@ -10,7 +10,7 @@ export default function DifferentialDiagnosis(){
         <div>
             <TitleBar title="Differential Diagnoses"/>
             <div class="listContainer">
-                <List title="LIKELY"/>
+                <List title="LIKELY" colour="#5DAD89"/>
             </div>
         </div>
     )

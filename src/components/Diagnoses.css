@@ -1,12 +1,12 @@
+/* List Styling */
 .listContainer{
     display: flex;
     justify-content: center;
     border: 1px solid red;
-    padding: 2em;
+    padding: 1em;
 }
 
 .list{
-    background-color: lightskyblue;
     width: 50%;
 }
 
@@ -15,14 +15,47 @@
     justify-content: center;
     flex-direction: column;
 }
-
 .listRow{
+    display: flex;
+    align-items: stretch;
     max-width: 90%;
-    margin: 0.5em;
+    margin: 1em;
+    font-size: 1.25em;
+}
+
+.listNumber input{
+    height: calc(100% - 1em);
+    width: 2em;
+    padding: 0.5em;
+    text-align: center;
+    font-size: inherit;
+    border: none;
+}
+
+.listEntry{
+    margin: 0 1em;
+    flex-grow: 1;
     background-color: white;
     padding: 1em;
 }
 
+.listRow li {
+    background-color: white;
+}
+
+.transferButton{
+    display: flex;
+    align-items: center;
+    color: #ffffffA9;
+}
+
+.transferButton:hover{
+    color: #ffffff;
+    cursor: pointer;
+}
+
+
+/* TitleBar Styling */
 .titleBar{
     padding: 1em;
     background-color: #00000060;
