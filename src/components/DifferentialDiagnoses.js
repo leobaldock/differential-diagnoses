@@ -19,7 +19,7 @@ class DifferentialDiagnosis extends React.Component {
         super(props)
 
         this.state = {
-            rows: [
+            listA: [
                 // Each row/diagnosis should look something like this.
                 // We'll probably add more when we get FIHR resource integrated
 
@@ -29,7 +29,7 @@ class DifferentialDiagnosis extends React.Component {
                 //     note: ""
                 // }
             ],
-            deletingRow: null
+            deletingRow: null // [list, index]
         }
 
         this.addRow = this.addRow.bind(this);
@@ -39,23 +39,30 @@ class DifferentialDiagnosis extends React.Component {
         this.onDragEnd = this.onDragEnd.bind(this);
     }
 
-    addRow() {
-        this.state.rows.push({
+    addRow(list) {
+        list.push({
             id: new Date().getTime(),
-            displayName: "Sample" + this.state.rows.length,
+            displayName: "Sample" + list.length,
             note: ""
         });
-        this.setState({
-            rows: [...this.state.rows]
-        });
+
+        if (list == this.state.listA) this.setState({listA: [...list]});
+        else if (list == this.state.listB) this.setState({listB: [...list]});
+        else console.log("Unkown list");
     }
 
-    deleteRow(index) {
-        this.state.rows.splice(index, 1);
-        this.setState({
-            rows: [...this.state.rows],
+    deleteRow(list, index) {
+        list.splice(index, 1);
+
+        let newState = {
             deletingRow: null
-        });
+        }
+
+        if (list == this.state.listA) newState.listA = list;
+        else if (list == this.state.listB) newState.listB = list;
+        else console.log("Unkown list");
+
+        this.setState(newState);
     }
 
     updateRowNumber(from, to) {
@@ -71,8 +78,13 @@ class DifferentialDiagnosis extends React.Component {
         });
     }
 
-    // a little function to help us with reordering the result
     reorder(list, startIndex, endIndex) {
+        if (list.length < 2) return;
+        // Go to top of list
+        if (endIndex < 0) endIndex = 0;
+        // Go to bottom of list
+        if (endIndex >= list.length) endIndex = list.length - 1;
+
         const result = Array.from(list);
         const [removed] = result.splice(startIndex, 1);
         result.splice(endIndex, 0, removed);
@@ -86,13 +98,13 @@ class DifferentialDiagnosis extends React.Component {
         }
     
         const items = this.reorder(
-            this.state.rows,
+            this.state.listA,
             result.source.index,
             result.destination.index
         );
     
         this.setState({
-            rows: items
+            listA: items
         });
       }
 
@@ -111,22 +123,23 @@ class DifferentialDiagnosis extends React.Component {
                         <List
                             title="Likely Diagnoses"
                             colour="#5DAD89"
-                            rows={this.state.rows}
-                            addRow={this.addRow}
-                            deleteRow={(index) => this.setState({deletingRow: index})}
+                            rows={this.state.listA}
+                            addRow={() => this.addRow(this.state.listA)}
+                            deleteRow={(index) => this.setState({deletingRow: [this.state.listA, index]})}
                             updateRowNumber={this.updateRowNumber}
                             />
                     </DragDropContext>
                 </div>
 
-                {(this.state.deletingRow || this.state.deletingRow == 0) &&
+                {this.state.deletingRow &&
                     <Popup
                         title="Are you sure you want to delete this diagnosis?"
-                        yesCallback={() => this.deleteRow(this.state.deletingRow)}
+                        yesCallback={() => this.deleteRow(...this.state.deletingRow)}
                         noCallback={() => this.setState({deletingRow: null})}
                     >
-                        {this.state.rows[this.state.deletingRow].displayName}
-                    </Popup>}
+                        {this.state.deletingRow[0][this.state.deletingRow[1]].displayName}
+                    </Popup>
+                }
             </>
         );
     }   
