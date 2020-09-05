@@ -2,6 +2,7 @@ import React from "react";
 import TitleBar from "./TitleBar"
 import List from "./List"
 import "./Diagnoses.css";
+import Popup from "./Popup";
 
 export default function DifferentialDiagnosis(){
 

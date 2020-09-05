@@ -64,3 +64,80 @@
     flex-direction: row; 
     justify-content: space-between;
   }
+
+
+
+/* Popup Styling */
+.popupBlur {
+    height: 100vh;
+    width: 100vw;
+    margin: 0;
+    padding: 0;
+    position: fixed;
+    top: 0;
+    left: 0;
+    backdrop-filter: blur(3px);
+    background-color: #00000040;
+}
+
+.popupContainer {
+   height: 100vh;
+   width: 100vw;
+   margin: 0;
+   padding: 0;
+   position: fixed;
+   top: 0;
+   left: 0;
+   display: flex;
+   align-items: center;
+   justify-content: center;
+}
+
+.popup {
+    background-color: white;
+    padding: 1em;
+    max-width: 800px;
+    box-shadow: 0 0 10px 0px #00000080;
+}
+
+.popup h1 {
+    text-align: center;
+    font-weight: 400;
+}
+
+.popupContent {
+    display: flex;
+    justify-content: center;
+    margin: 2em 0;
+}
+
+.popup .buttonPanel {
+    display: flex;
+    justify-content: center;
+}
+
+.popup .buttonPanel button {
+    min-width: 10em;
+    margin: 0.25em;
+    padding: 0.5em;
+    font-size: 1.5em;
+    border: none;
+    color: white;
+    cursor: pointer;
+}
+
+.popup .buttonPanel button.yes {
+   background-color: #5DAD89; 
+}
+
+.popup .buttonPanel button.yes:hover {
+    background-color: #25AA6E;
+ }
+
+.popup .buttonPanel button.no {
+    background-color: #DA7676; 
+ }
+
+ .popup .buttonPanel button.no:hover {
+    background-color: #D85656;
+ }
