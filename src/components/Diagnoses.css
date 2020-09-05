@@ -67,8 +67,16 @@
 
 /* TitleBar Styling */
 .titleBar{
-    text-align: center;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+
     padding: 1em;
     background-color: #00000060;
     color: white;
+  }
+
+  .buttonContainer > *{
+      margin: 0 0.5em;
   }
