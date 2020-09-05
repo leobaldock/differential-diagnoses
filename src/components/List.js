@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useState, useEffect} from "react";
 import TitleBar from "./TitleBar"
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
 import {
@@ -7,7 +7,7 @@ import {
     faAngleDoubleRight,
 } from '@fortawesome/free-solid-svg-icons' 
 
-export default function List({title, colour, rows, addRow, deleteRow}){
+export default function List({title, colour, rows, addRow, deleteRow, updateRowNumber}){
 
 
     return (
@@ -16,9 +16,9 @@ export default function List({title, colour, rows, addRow, deleteRow}){
 
             <div class="listRowContainer">
                 <ol>
-                    {rows.map((name, index) => 
-                        <li>
-                            <ListRow name={name} index={index + 1} colour={colour} deleteRow={deleteRow}/>
+                    {rows.map((val, index) => 
+                        <li key={val}>
+                            <ListRow content={val} rowNumber={index + 1} colour={colour} deleteRow={deleteRow} updateRowNumber={updateRowNumber}/>
                         </li>
                     )}
                 </ol>
@@ -32,17 +32,31 @@ export default function List({title, colour, rows, addRow, deleteRow}){
 }
 
 
-function ListRow({colour, name, index, deleteRow}){
+function ListRow({colour, content, rowNumber, deleteRow, updateRowNumber}) {
+
+    const [inputNum, setInputNum] = useState(rowNumber);
+
+    const handleKeyDown = (e) => {
+        if (e.key == "Enter") {
+            updateRowNumber(rowNumber - 1, inputNum - 1);
+        }
+    }
+
+    const handleBlur = () => {
+        updateRowNumber(rowNumber - 1, inputNum - 1);
+    }
+
+    useEffect(() => setInputNum(rowNumber), [rowNumber]);
 
     return (
         <div class="listRow">
             <div class="listNumber">
-                <input style={{color: colour}} value={index} type="text"/>
+                <input style={{color: colour}} value={inputNum} onChange={(e) => setInputNum(e.target.value)} onKeyDown={handleKeyDown} onBlur={handleBlur} type="text"/>
             </div>
             <div class="listEntry">
                 <FontAwesomeIcon style={{cursor: "grab"}} icon={faBars}/>
-                <span style={{flexGrow: 1, marginLeft: "1em"}}> {name} </span>
-                <FontAwesomeIcon onClick={() => deleteRow(index - 1)} style={{cursor: "pointer"}} color="grey" icon={faMinusCircle}/>
+                <span style={{flexGrow: 1, marginLeft: "1em"}}> {content} </span>
+                <FontAwesomeIcon onClick={() => deleteRow(rowNumber - 1)} style={{cursor: "pointer"}} color="grey" icon={faMinusCircle}/>
             </div>
             <div class="transferButton">
                 <FontAwesomeIcon icon={faAngleDoubleRight} />
