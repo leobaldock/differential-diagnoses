@@ -19,7 +19,16 @@ class DifferentialDiagnosis extends React.Component {
         super(props)
 
         this.state = {
-            rows: [],
+            rows: [
+                // Each row/diagnosis should look something like this.
+                // We'll probably add more when we get FIHR resource integrated
+
+                // {
+                //     id: "129842",
+                //     displayName: "Cancer",
+                //     note: ""
+                // }
+            ],
             deletingRow: null
         }
 
@@ -31,7 +40,11 @@ class DifferentialDiagnosis extends React.Component {
     }
 
     addRow() {
-        this.state.rows.push("Sample" + this.state.rows.length);
+        this.state.rows.push({
+            id: new Date().getTime(),
+            displayName: "Sample" + this.state.rows.length,
+            note: ""
+        });
         this.setState({
             rows: [...this.state.rows]
         });
@@ -93,7 +106,7 @@ class DifferentialDiagnosis extends React.Component {
         return (
             <>
                 <TitleBar title="Differential Diagnoses" buttons={pageTitleButtons}/>
-                <div class="listContainer">
+                <div className="listContainer">
                     <DragDropContext onDragEnd={this.onDragEnd}>
                         <List
                             title="Likely Diagnoses"
@@ -112,7 +125,7 @@ class DifferentialDiagnosis extends React.Component {
                         yesCallback={() => this.deleteRow(this.state.deletingRow)}
                         noCallback={() => this.setState({deletingRow: null})}
                     >
-                        {this.state.rows[this.state.deletingRow]}
+                        {this.state.rows[this.state.deletingRow].displayName}
                     </Popup>}
             </>
         );

@@ -42,8 +42,8 @@ export default function List({title, colour, rows, addRow, deleteRow, updateRowN
                     ref={provided.innerRef}
                     style={getListStyle(snapshot.isDraggingOver)}
                     >
-                        {rows.map((val, index) => (
-                            <Draggable key={val} draggableId={val} index={index}>   
+                        {rows.map((row, index) => (
+                            <Draggable key={row.id} draggableId={row.id.toString(10)} index={index}>   
                                 {(provided, snapshot) => (
                                     <div
                                         ref={provided.innerRef}
@@ -54,8 +54,8 @@ export default function List({title, colour, rows, addRow, deleteRow, updateRowN
                                             provided.draggableProps.style
                                         )}
                                     >
-                                        <span key={val}>
-                                            <ListRow content={val} rowNumber={index + 1} colour={colour} deleteRow={deleteRow} updateRowNumber={updateRowNumber}/>
+                                        <span>
+                                            <ListRow content={row.displayName} rowNumber={index + 1} colour={colour} deleteRow={deleteRow} updateRowNumber={updateRowNumber}/>
                                         </span>
                                     </div>
                                 )}
