@@ -5,14 +5,18 @@ import {
     faBars,
     faMinusCircle,
     faAngleDoubleRight,
-} from '@fortawesome/free-solid-svg-icons' 
+    faPalette,
+} from '@fortawesome/free-solid-svg-icons'
 
 export default function List({title, colour, rows, addRow, deleteRow, updateRowNumber}){
-
+    
+    const listButtons = [
+        <FontAwesomeIcon icon={faPalette} size="3x" style={{cursor: "pointer"}}/>
+    ]
 
     return (
         <div class="list" style={{backgroundColor: colour, color: colour}}>
-            <TitleBar title={title}/>
+            <TitleBar title={title} buttons={listButtons}/>
 
             <div class="listRowContainer">
                 <ol>

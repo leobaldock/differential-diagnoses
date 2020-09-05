@@ -1,11 +1,21 @@
 import React, {useState} from "react";
-import TitleBar from "./TitleBar"
-import List from "./List"
+import TitleBar from "./TitleBar";
+import List from "./List";
 import "./Diagnoses.css";
 import Popup from "./Popup";
+import {FontAwesomeIcon} from '@fortawesome/react-fontawesome';
+import {
+    faSave,
+    faEye,
+} from '@fortawesome/free-solid-svg-icons';
 
 
 export default function DifferentialDiagnosis(){
+    const pageTitleButtons = [
+        <FontAwesomeIcon icon={faSave} size="3x" style={{cursor: "pointer"}}/>,
+        <FontAwesomeIcon icon={faEye} size="3x" style={{cursor: "pointer"}}/>,
+    ]
+
     const [rows, setRows] = useState([]);
     const [deletingRow, setDeletingRow] = useState(null);
 
@@ -38,7 +48,7 @@ export default function DifferentialDiagnosis(){
 
     return (
         <>
-            <TitleBar title="Differential Diagnoses"/>
+            <TitleBar title="Differential Diagnoses" buttons={pageTitleButtons}/>
             <div class="listContainer">
                 <List title="LIKELY DIAGNOSIS" colour="#5DAD89" rows={rows} addRow={addRow} deleteRow={setDeletingRow} updateRowNumber={updateRowNumber}/>
             </div>

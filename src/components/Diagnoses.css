@@ -67,14 +67,18 @@
 
 /* TitleBar Styling */
 .titleBar{
-    text-align: center;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
     padding: 1em;
     background-color: #00000060;
     color: white;
-    display: flex;
-    flex-direction: row; 
-    justify-content: space-between;
   }
+
+.buttonContainer > *{
+    margin: 0 0.5em;
+}
 
 
 
@@ -143,12 +147,14 @@
 
 .popup .buttonPanel button.yes:hover {
     background-color: #25AA6E;
- }
+}
 
 .popup .buttonPanel button.no {
     background-color: #DA7676; 
- }
+}
 
- .popup .buttonPanel button.no:hover {
+.popup .buttonPanel button.no:hover {
     background-color: #D85656;
- }
+}
+
+
