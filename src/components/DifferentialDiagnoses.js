@@ -8,6 +8,7 @@ import {
     faSave,
     faEye,
 } from '@fortawesome/free-solid-svg-icons';
+import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 
 
 export default function DifferentialDiagnosis(){
@@ -40,17 +41,41 @@ export default function DifferentialDiagnosis(){
         // Go to bottom of list
         if (to >= rows.length) to = rows.length - 1;
 
-        const result = Array.from(rows);
-        const [removed] = result.splice(from, 1);
-        result.splice(to, 0, removed);
+        const result = reorder(rows, from, to);
         setRows(result);
     }
+
+    // a little function to help us with reordering the result
+    const reorder = (list, startIndex, endIndex) => {
+        const result = Array.from(list);
+        const [removed] = result.splice(startIndex, 1);
+        result.splice(endIndex, 0, removed);
+    
+        return result;
+    };
+
+    const onDragEnd = (result) => {
+        // dropped outside the list
+        if (!result.destination) {
+          return;
+        }
+    
+        const items = reorder(
+          rows,
+          result.source.index,
+          result.destination.index
+        );
+    
+        setRows(items);
+      }
 
     return (
         <>
             <TitleBar title="Differential Diagnoses" buttons={pageTitleButtons}/>
             <div class="listContainer">
-                <List title="LIKELY DIAGNOSIS" colour="#5DAD89" rows={rows} addRow={addRow} deleteRow={setDeletingRow} updateRowNumber={updateRowNumber}/>
+                <DragDropContext onDragEnd={onDragEnd}>
+                    <List title="LIKELY DIAGNOSIS" colour="#5DAD89" rows={rows} addRow={addRow} deleteRow={setDeletingRow} updateRowNumber={updateRowNumber}/>
+                </DragDropContext>
             </div>
 
             {(deletingRow || deletingRow == 0) &&
