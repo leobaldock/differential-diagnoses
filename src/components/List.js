@@ -6,11 +6,12 @@ import {
     faMinusCircle,
     faAngleDoubleRight,
     faPalette,
+    faComment
 } from '@fortawesome/free-solid-svg-icons'
 import { Droppable, Draggable } from "react-beautiful-dnd";
 
 
-export default function List({title, colour, rows, addRow, deleteRow, updateRowNumber, droppableId, transfer}){
+export default function List({title, colour, rows, addRow, deleteRow, updateRowNumber, droppableId, transfer, showNotes}){
     
     const listButtons = [
         <FontAwesomeIcon icon={faPalette} size="3x" style={{cursor: "pointer"}}/>
@@ -55,7 +56,7 @@ export default function List({title, colour, rows, addRow, deleteRow, updateRowN
                                         )}
                                     >
                                         <span>
-                                            <ListRow content={row.displayName} rowNumber={index + 1} colour={colour} deleteRow={deleteRow} updateRowNumber={updateRowNumber} transfer={transfer}/>
+                                            <ListRow content={row.displayName} rowNumber={index + 1} colour={colour} deleteRow={deleteRow} updateRowNumber={updateRowNumber} transfer={transfer} showNotes={showNotes}/>
                                         </span>
                                     </div>
                                 )}
@@ -76,7 +77,7 @@ export default function List({title, colour, rows, addRow, deleteRow, updateRowN
 }
 
 
-function ListRow({colour, content, rowNumber, deleteRow, updateRowNumber, transfer}) {
+function ListRow({colour, content, rowNumber, deleteRow, updateRowNumber, transfer, showNotes}) {
 
     const [inputNum, setInputNum] = useState(rowNumber);
 
@@ -100,7 +101,10 @@ function ListRow({colour, content, rowNumber, deleteRow, updateRowNumber, transf
             <div className="listEntry">
                 <FontAwesomeIcon style={{cursor: "grab"}} icon={faBars}/>
                 <span style={{flexGrow: 1, marginLeft: "1em"}}> {content} </span>
-                <FontAwesomeIcon onClick={() => deleteRow(rowNumber - 1)} style={{cursor: "pointer"}} color="grey" icon={faMinusCircle}/>
+                <div>
+                    <FontAwesomeIcon onClick={() => showNotes(rowNumber - 1)} style={{cursor: "pointer", marginRight: "0.5em"}} color="grey" icon={faComment}/>
+                    <FontAwesomeIcon onClick={() => deleteRow(rowNumber - 1)} style={{cursor: "pointer"}} color="grey" icon={faMinusCircle}/>
+                </div>
             </div>
             <div className="transferButton" onClick={() => transfer(rowNumber - 1)}>
                 <FontAwesomeIcon icon={faAngleDoubleRight} />

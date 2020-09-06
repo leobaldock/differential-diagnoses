@@ -31,6 +31,7 @@ class DifferentialDiagnosis extends React.Component {
             ],
             listB: [],
 
+            showNotes: null, // row object
             deletingRow: null // [list, index]
         }
         
@@ -213,6 +214,7 @@ class DifferentialDiagnosis extends React.Component {
                             deleteRow={(index) => this.setState({deletingRow: [this.state.listA, index]})}
                             updateRowNumber={(from, to) => this.setState({listA: this.reorder(this.state.listA, from, to)})}
                             transfer={(index) => this.manualMove(this.state.listA, this.state.listB, index, 0)}
+                            showNotes={(index) => this.setState({showNotes: {...this.state.listA[index], list: this.state.listA}})}
                         />
                         <List
                             title="Critical"
@@ -223,6 +225,7 @@ class DifferentialDiagnosis extends React.Component {
                             deleteRow={(index) => this.setState({deletingRow: [this.state.listB, index]})}
                             updateRowNumber={(from, to) => this.setState({listB: this.reorder(this.state.listB, from, to)})}
                             transfer={(index) => this.manualMove(this.state.listB, this.state.listA, index, 0)}
+                            showNotes={(index) => this.setState({showNotes: {...this.state.listB[index], list: this.state.listB}})}
                        />
                     </DragDropContext>
                 </div>
@@ -234,6 +237,38 @@ class DifferentialDiagnosis extends React.Component {
                         noCallback={() => this.setState({deletingRow: null})}
                     >
                         {this.state.deletingRow[0][this.state.deletingRow[1]].displayName}
+                    </Popup>
+                }
+
+                {this.state.showNotes &&
+                    <Popup
+                        title={"Add a comment for " + this.state.showNotes.displayName}
+                        noCallback={() => this.setState({showNotes: null})}
+                        yesCallback={() => {
+                            const newList = [...this.state.showNotes.list];
+                            const item = newList.find(x => x.id == this.state.showNotes.id);
+                            if (item) item.note = this.state.showNotes.note;
+                            
+                            const newState = {
+                                showNotes: null
+                            };
+
+                            if (this.state.showNotes.list == this.state.listA) newState.listA = newList;
+                            else if (this.state.showNotes.list == this.state.listB) newState.listB = newList;
+                            else console.log("Unknown list");
+
+                            this.setState(newState);
+                        }}
+                    >
+                        <textarea
+                            className="commentBox"
+                            value={this.state.showNotes.note}
+                            onChange={(e) => {
+                                let row = this.state.showNotes;
+                                row.note = e.target.value;
+                                this.setState({showNotes: row});
+                            }}
+                        />
                     </Popup>
                 }
             </>

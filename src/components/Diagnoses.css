@@ -166,4 +166,10 @@
     background-color: #D85656;
 }
 
+.commentBox {
+    min-width: 35em;
+    min-height: 15em;
+    padding: 1em;
+}
+
 
