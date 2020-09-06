@@ -201,8 +201,8 @@ class DifferentialDiagnosis extends React.Component {
         ]
 
         return (
-            <>
-                <TitleBar title="Differential Diagnoses" buttons={pageTitleButtons}/>
+            <div style={{minHeight: "100vh", display: "flex", flexDirection: "column"}}>
+                <TitleBar title="Differential Diagnoses" buttons={pageTitleButtons}/>   
                 <div className="listContainer">
                     <DragDropContext onDragEnd={this.onDragEnd}>
                         <List
@@ -271,7 +271,7 @@ class DifferentialDiagnosis extends React.Component {
                         />
                     </Popup>
                 }
-            </>
+            </div>
         );
     }   
 }

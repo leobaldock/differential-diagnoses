@@ -2,6 +2,8 @@
 .listContainer{
     display: flex;
     padding: 1em;
+    flex-grow: 1;
+    align-items: stretch;
 }
 
 .listContainer .list:nth-child(1) {
