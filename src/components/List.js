@@ -10,7 +10,7 @@ import {
 import { Droppable, Draggable } from "react-beautiful-dnd";
 
 
-export default function List({title, colour, rows, addRow, deleteRow, updateRowNumber}){
+export default function List({title, colour, rows, addRow, deleteRow, updateRowNumber, droppableId}){
     
     const listButtons = [
         <FontAwesomeIcon icon={faPalette} size="3x" style={{cursor: "pointer"}}/>
@@ -35,7 +35,7 @@ export default function List({title, colour, rows, addRow, deleteRow, updateRowN
             <TitleBar title={title} buttons={listButtons}/>
 
             <div class="listRowContainer">
-                <Droppable droppableId="droppable">
+                <Droppable droppableId={droppableId}>
                 {(provided, snapshot) => (
                     <div
                     {...provided.droppableProps}

@@ -29,14 +29,23 @@ class DifferentialDiagnosis extends React.Component {
                 //     note: ""
                 // }
             ],
+            listB: [],
+
             deletingRow: null // [list, index]
         }
+        
+        this.id2List = {
+            droppable1: "listA",
+            droppable2: "listB"
+        };
 
         this.addRow = this.addRow.bind(this);
         this.deleteRow = this.deleteRow.bind(this);
         this.updateRowNumber = this.updateRowNumber.bind(this);
         this.reorder = this.reorder.bind(this);
         this.onDragEnd = this.onDragEnd.bind(this);
+        this.getList = this.getList.bind(this);
+        this.move = this.move.bind(this);
     }
 
     addRow(list) {
@@ -106,7 +115,62 @@ class DifferentialDiagnosis extends React.Component {
         this.setState({
             listA: items
         });
-      }
+    }
+
+    getList(id) {
+        return this.state[this.id2List[id]];
+    } 
+
+    move(source, destination, droppableSource, droppableDestination) {
+        const sourceClone = Array.from(source);
+        const destClone = Array.from(destination);
+        const [removed] = sourceClone.splice(droppableSource.index, 1);
+    
+        destClone.splice(droppableDestination.index, 0, removed);
+    
+        const result = {};
+        result[droppableSource.droppableId] = sourceClone;
+        result[droppableDestination.droppableId] = destClone;
+    
+        return result;
+    };
+
+    onDragEnd(result) {
+        const { source, destination } = result;
+
+        // dropped outside the list
+        if (!destination) {
+            return;
+        }
+
+        if (source.droppableId === destination.droppableId) {
+
+            const list = this.getList(source.droppableId)
+            const items = this.reorder(
+                list,
+                source.index,
+                destination.index
+            );
+
+            if (list == this.state.listA) this.setState({listA: items});
+            else if (list == this.state.listB) this.setState({listB: items});
+            else console.log("Unknown list");
+
+        } else {
+            const result = this.move(
+                this.getList(source.droppableId),
+                this.getList(destination.droppableId),
+                source,
+                destination
+            );
+
+            this.setState({
+                listA: result.droppable1,
+                listB: result.droppable2
+            });
+        }
+    };
+    
 
     render() {
 
@@ -123,11 +187,21 @@ class DifferentialDiagnosis extends React.Component {
                         <List
                             title="Likely Diagnoses"
                             colour="#5DAD89"
+                            droppableId="droppable1"
                             rows={this.state.listA}
                             addRow={() => this.addRow(this.state.listA)}
                             deleteRow={(index) => this.setState({deletingRow: [this.state.listA, index]})}
-                            updateRowNumber={this.updateRowNumber}
-                            />
+                            updateRowNumber={(from, to) => this.setState({listA: this.reorder(this.state.listA, from, to)})}
+                        />
+                        <List
+                            title="Critical"
+                            colour="#DA7676"
+                            droppableId="droppable2"
+                            rows={this.state.listB}
+                            addRow={() => this.addRow(this.state.listB)}
+                            deleteRow={(index) => this.setState({deletingRow: [this.state.listB, index]})}
+                            updateRowNumber={(from, to) => this.setState({listB: this.reorder(this.state.listB, from, to)})}
+                        />
                     </DragDropContext>
                 </div>
 
