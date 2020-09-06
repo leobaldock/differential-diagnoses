@@ -10,7 +10,7 @@ import {
 import { Droppable, Draggable } from "react-beautiful-dnd";
 
 
-export default function List({title, colour, rows, addRow, deleteRow, updateRowNumber, droppableId}){
+export default function List({title, colour, rows, addRow, deleteRow, updateRowNumber, droppableId, transfer}){
     
     const listButtons = [
         <FontAwesomeIcon icon={faPalette} size="3x" style={{cursor: "pointer"}}/>
@@ -31,10 +31,10 @@ export default function List({title, colour, rows, addRow, deleteRow, updateRowN
     });
 
     return (
-        <div class="list" style={{backgroundColor: colour, color: colour}}>
+        <div className="list" style={{backgroundColor: colour, color: colour}}>
             <TitleBar title={title} buttons={listButtons}/>
 
-            <div class="listRowContainer">
+            <div className="listRowContainer">
                 <Droppable droppableId={droppableId}>
                 {(provided, snapshot) => (
                     <div
@@ -55,7 +55,7 @@ export default function List({title, colour, rows, addRow, deleteRow, updateRowN
                                         )}
                                     >
                                         <span>
-                                            <ListRow content={row.displayName} rowNumber={index + 1} colour={colour} deleteRow={deleteRow} updateRowNumber={updateRowNumber}/>
+                                            <ListRow content={row.displayName} rowNumber={index + 1} colour={colour} deleteRow={deleteRow} updateRowNumber={updateRowNumber} transfer={transfer}/>
                                         </span>
                                     </div>
                                 )}
@@ -66,7 +66,7 @@ export default function List({title, colour, rows, addRow, deleteRow, updateRowN
                     )}
                 </Droppable>
 
-                <div class="addRowButton">
+                <div className="addRowButton">
                     <span onClick={addRow}> + ADD NEW DIAGNOSIS </span>
                 </div>
             
@@ -76,7 +76,7 @@ export default function List({title, colour, rows, addRow, deleteRow, updateRowN
 }
 
 
-function ListRow({colour, content, rowNumber, deleteRow, updateRowNumber}) {
+function ListRow({colour, content, rowNumber, deleteRow, updateRowNumber, transfer}) {
 
     const [inputNum, setInputNum] = useState(rowNumber);
 
@@ -93,16 +93,16 @@ function ListRow({colour, content, rowNumber, deleteRow, updateRowNumber}) {
     useEffect(() => setInputNum(rowNumber), [rowNumber]);
 
     return (
-        <div class="listRow">
-            <div class="listNumber">
+        <div className="listRow">
+            <div className="listNumber">
                 <input style={{color: colour}} value={inputNum} onChange={(e) => setInputNum(e.target.value)} onKeyDown={handleKeyDown} onBlur={handleBlur} type="text"/>
             </div>
-            <div class="listEntry">
+            <div className="listEntry">
                 <FontAwesomeIcon style={{cursor: "grab"}} icon={faBars}/>
                 <span style={{flexGrow: 1, marginLeft: "1em"}}> {content} </span>
                 <FontAwesomeIcon onClick={() => deleteRow(rowNumber - 1)} style={{cursor: "pointer"}} color="grey" icon={faMinusCircle}/>
             </div>
-            <div class="transferButton">
+            <div className="transferButton" onClick={() => transfer(rowNumber - 1)}>
                 <FontAwesomeIcon icon={faAngleDoubleRight} />
             </div>
         </div>

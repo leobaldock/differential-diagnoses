@@ -46,6 +46,7 @@ class DifferentialDiagnosis extends React.Component {
         this.onDragEnd = this.onDragEnd.bind(this);
         this.getList = this.getList.bind(this);
         this.move = this.move.bind(this);
+        this.manualMove = this.manualMove.bind(this);
     }
 
     addRow(list) {
@@ -121,6 +122,25 @@ class DifferentialDiagnosis extends React.Component {
         return this.state[this.id2List[id]];
     } 
 
+    manualMove(sourceList, destinationList, sourceIndex, destinationIndex) {
+        const sourceClone = Array.from(sourceList);
+        const destClone = Array.from(destinationList);
+        const [removed] = sourceClone.splice(sourceIndex, 1);
+        destClone.splice(destinationIndex, 0, removed);
+
+        let newState = {};
+
+        if (sourceList == this.state.listA) newState.listA = sourceClone;
+        else if (sourceList == this.state.listB) newState.listB = sourceClone;
+        else console.log("Uknown List");
+
+        if (destinationList == this.state.listA) newState.listA = destClone;
+        else if(destinationList == this.state.listB) newState.listB = destClone;
+        else console.log("Unkown List");
+
+        this.setState(newState);
+    }
+
     move(source, destination, droppableSource, droppableDestination) {
         const sourceClone = Array.from(source);
         const destClone = Array.from(destination);
@@ -192,6 +212,7 @@ class DifferentialDiagnosis extends React.Component {
                             addRow={() => this.addRow(this.state.listA)}
                             deleteRow={(index) => this.setState({deletingRow: [this.state.listA, index]})}
                             updateRowNumber={(from, to) => this.setState({listA: this.reorder(this.state.listA, from, to)})}
+                            transfer={(index) => this.manualMove(this.state.listA, this.state.listB, index, 0)}
                         />
                         <List
                             title="Critical"
@@ -201,7 +222,8 @@ class DifferentialDiagnosis extends React.Component {
                             addRow={() => this.addRow(this.state.listB)}
                             deleteRow={(index) => this.setState({deletingRow: [this.state.listB, index]})}
                             updateRowNumber={(from, to) => this.setState({listB: this.reorder(this.state.listB, from, to)})}
-                        />
+                            transfer={(index) => this.manualMove(this.state.listB, this.state.listA, index, 0)}
+                       />
                     </DragDropContext>
                 </div>
 

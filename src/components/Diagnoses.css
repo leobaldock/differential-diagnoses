@@ -1,17 +1,28 @@
 /* List Styling */
 .listContainer{
     display: flex;
-    justify-content: center;
     padding: 1em;
 }
 
+.listContainer .list:nth-child(1) {
+    margin-right: 0.5em;
+}
+
+.listContainer .list:nth-child(2) {
+    margin-left: 0.5em;
+}
+
 .list{
-    width: 50%;
+    flex-grow: 1;
+    flex-basis: 1px;
+    display: flex;
+    flex-direction: column;
 }
 
 .listRowContainer{
+    flex-grow: 1;
     display: flex;
-    justify-content: center;
+    justify-content: space-between;
     flex-direction: column;
     font-size: 1.25em;
 }
