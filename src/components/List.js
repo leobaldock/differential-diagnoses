@@ -9,12 +9,15 @@ import {
     faComment
 } from '@fortawesome/free-solid-svg-icons'
 import { Droppable, Draggable } from "react-beautiful-dnd";
+import { SliderPicker } from "react-color";
 
 
 export default function List({title, colour, rows, addRow, deleteRow, updateRowNumber, droppableId, transfer, showNotes}){
+    const [paletteVisibility, setPaletteVisibility] = useState(false);
+    const [listColour, setListColour] = useState(colour);
     
     const listButtons = [
-        <FontAwesomeIcon icon={faPalette} size="3x" style={{cursor: "pointer"}}/>
+        <FontAwesomeIcon icon={faPalette} size="3x" style={{cursor: "pointer"}} onClick={() => setPaletteVisibility(!paletteVisibility)}/>
     ]
 
     const getListStyle = isDraggingOver => ({
@@ -31,9 +34,33 @@ export default function List({title, colour, rows, addRow, deleteRow, updateRowN
         ...draggableStyle
     });
 
+    const testStyles = {
+        default: {
+            hue: {
+                height: '10px',
+                width: '90%',
+                margin: 'auto',
+            },
+        },
+      }
+
     return (
-        <div className="list" style={{backgroundColor: colour, color: colour}}>
+        <div className="list" style={{backgroundColor: listColour, color: listColour}}>
+
             <TitleBar title={title} buttons={listButtons}/>
+            {paletteVisibility &&
+            (
+                <div style={{background: "#00000060"}}>
+                <SliderPicker
+                    styles = {testStyles}
+                    color = {listColour}
+                    onChange={(e) => {
+                        setListColour(e.hex);
+                        //setPaletteVisibility(false);
+                    }}
+                />
+              </div>
+            )}
 
             <div className="listRowContainer">
                 <Droppable droppableId={droppableId}>
