@@ -12,7 +12,7 @@ import { Droppable, Draggable } from "react-beautiful-dnd";
 import { SliderPicker } from "react-color";
 
 
-export default function List({title, colour, rows, addRow, deleteRow, updateRowNumber, droppableId, transfer, showNotes}){
+export default function List({title, colour, rows, addRow, deleteRow, updateRowNumber, droppableId, transfer, showNotes, disableEdits}){
     const [paletteVisibility, setPaletteVisibility] = useState(false);
     const [listColour, setListColour] = useState(colour);
     
@@ -71,7 +71,7 @@ export default function List({title, colour, rows, addRow, deleteRow, updateRowN
                     style={getListStyle(snapshot.isDraggingOver)}
                     >
                         {rows.map((row, index) => (
-                            <Draggable key={row.id} draggableId={row.id.toString(10)} index={index}>   
+                            <Draggable isDragDisabled={disableEdits} key={row.id} draggableId={row.id.toString(10)} index={index}>   
                                 {(provided, snapshot) => (
                                     <div
                                         ref={provided.innerRef}
@@ -83,7 +83,16 @@ export default function List({title, colour, rows, addRow, deleteRow, updateRowN
                                         )}
                                     >
                                         <span>
-                                            <ListRow content={row.displayName} rowNumber={index + 1} colour={colour} deleteRow={deleteRow} updateRowNumber={updateRowNumber} transfer={transfer} showNotes={showNotes}/>
+                                            <ListRow
+                                                content={row.displayName}
+                                                rowNumber={index + 1}
+                                                colour={colour}
+                                                deleteRow={deleteRow}
+                                                updateRowNumber={updateRowNumber}
+                                                transfer={transfer}
+                                                showNotes={showNotes}
+                                                disableEdits={disableEdits}
+                                            />
                                         </span>
                                     </div>
                                 )}
@@ -94,17 +103,19 @@ export default function List({title, colour, rows, addRow, deleteRow, updateRowN
                     )}
                 </Droppable>
 
-                <div className="addRowButton">
-                    <span onClick={addRow}> + ADD NEW DIAGNOSIS </span>
-                </div>
-            
+                
+                {!disableEdits &&
+                    (<div className="addRowButton">
+                        <span onClick={addRow}> + ADD NEW DIAGNOSIS </span>
+                    </div>)
+                }            
             </div>
         </div>
     )
 }
 
 
-function ListRow({colour, content, rowNumber, deleteRow, updateRowNumber, transfer, showNotes}) {
+function ListRow({colour, content, rowNumber, deleteRow, updateRowNumber, transfer, showNotes, disableEdits}) {
 
     const [inputNum, setInputNum] = useState(rowNumber);
 
@@ -123,14 +134,14 @@ function ListRow({colour, content, rowNumber, deleteRow, updateRowNumber, transf
     return (
         <div className="listRow">
             <div className="listNumber">
-                <input style={{color: colour}} value={inputNum} onChange={(e) => setInputNum(e.target.value)} onKeyDown={handleKeyDown} onBlur={handleBlur} type="text"/>
+                <input readonly={disableEdits} style={{color: colour}} value={inputNum} onChange={disableEdits ? () => {} : (e) => setInputNum(e.target.value)} onKeyDown={handleKeyDown} onBlur={handleBlur} type="text"/>
             </div>
             <div className="listEntry">
                 <FontAwesomeIcon style={{cursor: "grab"}} icon={faBars}/>
                 <span style={{flexGrow: 1, marginLeft: "1em"}}> {content} </span>
                 <div>
                     <FontAwesomeIcon onClick={() => showNotes(rowNumber - 1)} style={{cursor: "pointer", marginRight: "0.5em"}} color="grey" icon={faComment}/>
-                    <FontAwesomeIcon onClick={() => deleteRow(rowNumber - 1)} style={{cursor: "pointer"}} color="grey" icon={faMinusCircle}/>
+                    {!disableEdits && <FontAwesomeIcon onClick={() => deleteRow(rowNumber - 1)} style={{cursor: "pointer"}} color="grey" icon={faMinusCircle}/>}
                 </div>
             </div>
             <div className="transferButton" onClick={() => transfer(rowNumber - 1)}>
