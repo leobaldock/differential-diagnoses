@@ -118,6 +118,8 @@ export default function List({title, colour, rows, addRow, deleteRow, updateRowN
 function ListRow({colour, content, rowNumber, deleteRow, updateRowNumber, transfer, showNotes, disableEdits}) {
 
     const [inputNum, setInputNum] = useState(rowNumber);
+    const [commentColour, setCommentColour] = useState("grey");
+    const [deleteColour, setDeleteColour] = useState("grey");
 
     const handleKeyDown = (e) => {
         if (e.key == "Enter") {
@@ -140,8 +142,24 @@ function ListRow({colour, content, rowNumber, deleteRow, updateRowNumber, transf
                 <FontAwesomeIcon style={{cursor: "grab"}} icon={faBars}/>
                 <span style={{flexGrow: 1, marginLeft: "1em"}}> {content} </span>
                 <div>
-                    <FontAwesomeIcon onClick={() => showNotes(rowNumber - 1)} style={{cursor: "pointer", marginRight: "0.5em"}} color="grey" icon={faComment}/>
-                    {!disableEdits && <FontAwesomeIcon onClick={() => deleteRow(rowNumber - 1)} style={{cursor: "pointer"}} color="grey" icon={faMinusCircle}/>}
+                    <FontAwesomeIcon
+                        onClick={() => showNotes(rowNumber - 1)} 
+                        style={{cursor: "pointer", marginRight: "0.5em"}}
+                        color={commentColour}
+                        icon={faComment}
+                        onMouseEnter={() => setCommentColour(colour)}
+                        onMouseLeave={() => setCommentColour("grey")}
+                    />
+                    {!disableEdits &&
+                        <FontAwesomeIcon
+                            onClick={() => deleteRow(rowNumber - 1)}
+                            style={{cursor: "pointer"}}
+                            color={deleteColour}
+                            icon={faMinusCircle}
+                            onMouseEnter={() => setDeleteColour(colour)}
+                            onMouseLeave={() => setDeleteColour("grey")}
+                        />
+                    }
                 </div>
             </div>
             <div className="transferButton" onClick={() => transfer(rowNumber - 1)}>
