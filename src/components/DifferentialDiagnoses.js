@@ -10,9 +10,6 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { DragDropContext } from "react-beautiful-dnd";
 
-
-// TODO: get multiple lists working. Use this as a guide: https://codesandbox.io/s/ql08j35j3q?file=/index.js
-
 class DifferentialDiagnosis extends React.Component {
 
     constructor(props) {
@@ -235,6 +232,7 @@ class DifferentialDiagnosis extends React.Component {
                                 :
                                 (index) => this.setState({showNotes: {...this.state.listA[index], list: this.state.listA}})
                             }
+                            isLeft= {true}
                         />
                         <List
                             title={`Critical${this.state.showAnswers ? " (answers)" : ""}`}
@@ -251,6 +249,7 @@ class DifferentialDiagnosis extends React.Component {
                                 :
                                 (index) => this.setState({showNotes: {...this.state.listB[index], list: this.state.listB}})
                             }
+                            isLeft= {false}
                        />
                     </DragDropContext>
                 </div>

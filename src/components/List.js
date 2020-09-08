@@ -5,6 +5,7 @@ import {
     faBars,
     faMinusCircle,
     faAngleDoubleRight,
+    faAngleDoubleLeft,
     faPalette,
     faComment
 } from '@fortawesome/free-solid-svg-icons'
@@ -12,25 +13,30 @@ import { Droppable, Draggable } from "react-beautiful-dnd";
 import { SliderPicker } from "react-color";
 
 
-export default function List({title, colour, rows, addRow, deleteRow, updateRowNumber, droppableId, transfer, showNotes, disableEdits}){
+export default function List({title, colour, rows, addRow, deleteRow, updateRowNumber, droppableId, transfer, showNotes, disableEdits, isLeft}){
     const [paletteVisibility, setPaletteVisibility] = useState(false);
     const [listColour, setListColour] = useState(colour);
     
     const listButtons = [
-        <FontAwesomeIcon icon={faPalette} size="3x" style={{cursor: "pointer"}} onClick={() => setPaletteVisibility(!paletteVisibility)}/>
+        <FontAwesomeIcon
+        icon={faPalette}
+        size="3x"
+        style={{cursor: "pointer"}}
+        onClick={() => setPaletteVisibility(!paletteVisibility)}
+    />
     ]
 
     const getListStyle = isDraggingOver => ({
-        //background: isDraggingOver ? "lightblue" : "lightgrey",
+        //background: isDraggingOver ? "00000040" : "transparent",
         padding: "0.5em",
       });
 
     const getItemStyle = (isDragging, draggableStyle) => ({
         userSelect: "none",
         padding: "0.5em",
-        //background: isDragging ? "lightgreen" : "grey",
+        //background: isDragging ? "#00000010" : "transparent",
         
-        // styles we need to apply on draggables
+        //styles we need to apply on draggables
         ...draggableStyle
     });
 
@@ -92,6 +98,7 @@ export default function List({title, colour, rows, addRow, deleteRow, updateRowN
                                                 transfer={transfer}
                                                 showNotes={showNotes}
                                                 disableEdits={disableEdits}
+                                                isLeft= {isLeft}
                                             />
                                         </span>
                                     </div>
@@ -115,9 +122,11 @@ export default function List({title, colour, rows, addRow, deleteRow, updateRowN
 }
 
 
-function ListRow({colour, content, rowNumber, deleteRow, updateRowNumber, transfer, showNotes, disableEdits}) {
+function ListRow({colour, content, rowNumber, deleteRow, updateRowNumber, transfer, showNotes, disableEdits, isLeft}) {
 
     const [inputNum, setInputNum] = useState(rowNumber);
+    const [commentColour, setCommentColour] = useState("grey");
+    const [deleteColour, setDeleteColour] = useState("grey");
 
     const handleKeyDown = (e) => {
         if (e.key == "Enter") {
@@ -133,20 +142,44 @@ function ListRow({colour, content, rowNumber, deleteRow, updateRowNumber, transf
 
     return (
         <div className="listRow">
+            {!isLeft &&
+                <div style={{marginRight: "1em"}}className="transferButton" onClick={() => transfer(rowNumber - 1)}>
+                    <FontAwesomeIcon icon={faAngleDoubleLeft} />
+                </div>
+            }
+
             <div className="listNumber">
-                <input readonly={disableEdits} style={{color: colour}} value={inputNum} onChange={disableEdits ? () => {} : (e) => setInputNum(e.target.value)} onKeyDown={handleKeyDown} onBlur={handleBlur} type="text"/>
+                <input readonly={disableEdits} style={{color: "white", background: "#00000060"}} value={inputNum} onChange={disableEdits ? () => {} : (e) => setInputNum(e.target.value)} onKeyDown={handleKeyDown} onBlur={handleBlur} type="text"/>
             </div>
             <div className="listEntry">
                 <FontAwesomeIcon style={{cursor: "grab"}} icon={faBars}/>
                 <span style={{flexGrow: 1, marginLeft: "1em"}}> {content} </span>
                 <div>
-                    <FontAwesomeIcon onClick={() => showNotes(rowNumber - 1)} style={{cursor: "pointer", marginRight: "0.5em"}} color="grey" icon={faComment}/>
-                    {!disableEdits && <FontAwesomeIcon onClick={() => deleteRow(rowNumber - 1)} style={{cursor: "pointer"}} color="grey" icon={faMinusCircle}/>}
+                    <FontAwesomeIcon
+                        onClick={() => showNotes(rowNumber - 1)} 
+                        style={{cursor: "pointer", marginRight: "0.5em"}}
+                        color={commentColour}
+                        icon={faComment}
+                        onMouseEnter={() => setCommentColour(colour)}
+                        onMouseLeave={() => setCommentColour("grey")}
+                    />
+                    {!disableEdits &&
+                        <FontAwesomeIcon
+                            onClick={() => deleteRow(rowNumber - 1)}
+                            style={{cursor: "pointer"}}
+                            color={deleteColour}
+                            icon={faMinusCircle}
+                            onMouseEnter={() => setDeleteColour(colour)}
+                            onMouseLeave={() => setDeleteColour("grey")}
+                        />
+                    }
                 </div>
             </div>
-            <div className="transferButton" onClick={() => transfer(rowNumber - 1)}>
-                <FontAwesomeIcon icon={faAngleDoubleRight} />
-            </div>
+            {isLeft &&
+                <div className="transferButton" onClick={() => transfer(rowNumber - 1)}>
+                    <FontAwesomeIcon icon={faAngleDoubleRight} />
+                </div>
+            }
         </div>
     )
 }
