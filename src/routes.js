@@ -18,7 +18,16 @@ const Routes = (props) => {
           path="/authorize"
           component={(props) => {
             let params = queryString.parse(props.location.search);
-            window.location.href = params.authUri;
+            const qs = queryString.stringify({
+              response_type: params.response_type,
+              client_id: params.client_id,
+              redirect_uri: params.redirect_uri,
+              scope: params.scope,
+              state: params.state,
+              aud: params.aud,
+              launch: params.launch,
+            });
+            window.location.href = `${params.authUri}?${qs}`;
             return null;
           }}
         />

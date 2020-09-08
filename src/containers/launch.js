@@ -36,9 +36,23 @@ const Launch = (props) => {
   };
 
   const redirectToAuth = () => {
-    const authUri  = metadata.rest[0].security.extension[0].extension.find(e => e.url == "authorize").valueUri
-    const qs = queryString.stringify({ authUri: authUri });
-    // history.push(`/authorize?${qs}`)
+    const authUri = metadata.rest[0].security.extension[0].extension.find(
+      (e) => e.url == "authorize"
+    ).valueUri;
+
+    /* TODO: don't hardcode this stuff */
+    const qs = queryString.stringify({
+      authUri: authUri,
+      response_type: "code",
+      client_id: "e1b839fa-ee6c-4c18-b792-0f7a88e86359",
+      redirect_uri: "http://localhost:3000",
+      scope: "launch",
+      state: "test",
+      aud: iss,
+      launch: launch,
+    });
+
+    history.push(`/authorize?${qs}`);
   };
 
   return <div>{JSON.stringify(metadata)}</div>;
