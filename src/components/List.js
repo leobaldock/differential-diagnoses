@@ -86,7 +86,7 @@ export default function List({title, colour, rows, addRow, deleteRow, updateRowN
                                             <ListRow
                                                 content={row.displayName}
                                                 rowNumber={index + 1}
-                                                colour={colour}
+                                                colour={listColour}
                                                 deleteRow={deleteRow}
                                                 updateRowNumber={updateRowNumber}
                                                 transfer={transfer}
