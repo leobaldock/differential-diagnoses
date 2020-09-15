@@ -6,28 +6,41 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, useHistory } from "react-router-dom";
 import queryString from "query-string";
+import FHIR from "../state/fhir";
+import { getSecurityUri } from "../util/fhir";
 
 const Launch = (props) => {
   const location = useLocation();
   const history = useHistory();
   let params = queryString.parse(location.search);
-  const [iss, setIss] = useState(params.iss);
-  const [launch, setLaunch] = useState(params.launch);
-  const [metadata, setMetadata] = useState(null);
+  const {
+    iss,
+    setIss,
+    launch,
+    setLaunch,
+    metadata,
+    setMetadata,
+  } = FHIR.useContainer();
+
+  /* Runs when the query params change */
+  useEffect(() => {
+    setIss(params.iss);
+    setLaunch(params.launch);
+  }, [params]);
 
   /* Runs when the application launches */
   useEffect(() => {
-    getMetadata();
-  }, []);
+    fetchMetadata();
+  }, [iss]);
 
   /* Runs when the metadata changes */
   useEffect(() => {
-    if (metadata) {
+    if (metadata && launch) {
       redirectToAuth();
     }
-  }, [metadata]);
+  }, [metadata, launch]);
 
-  const getMetadata = () => {
+  const fetchMetadata = () => {
     fetch(`${iss}/metadata/`)
       .then((response) => response.json())
       .then((data) => {
@@ -36,9 +49,7 @@ const Launch = (props) => {
   };
 
   const redirectToAuth = () => {
-    const authUri = metadata.rest[0].security.extension[0].extension.find(
-      (e) => e.url == "authorize"
-    ).valueUri;
+    const authUri = getSecurityUri(metadata, "authorize");
 
     /* TODO: don't hardcode this stuff */
     const qs = queryString.stringify({

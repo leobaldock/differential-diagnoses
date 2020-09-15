@@ -3,14 +3,17 @@ import ReactDOM from "react-dom";
 import "./index.css";
 import App from "./App";
 import * as serviceWorker from "./serviceWorker";
-import { oauth2 as SMART } from "fhirclient";
 import { BrowserRouter as Router } from "react-router-dom";
+
+import FHIR from "./state/fhir";
 
 ReactDOM.render(
   <React.StrictMode>
-      <Router>
-          <App />
-      </Router>
+    <Router>
+      <FHIR.Provider>
+        <App />
+      </FHIR.Provider>
+    </Router>
   </React.StrictMode>,
   document.getElementById("root")
 );

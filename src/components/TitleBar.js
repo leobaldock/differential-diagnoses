@@ -1,14 +1,24 @@
-import React, { useState } from "react";
-import { TwitterPicker } from 'react-color'
+import React, { useEffect, useState } from "react";
+import FHIR from "../state/fhir";
 
-export default function TitleBar({title, buttons}){
-    return (
-        <div class="titleBar">
-            <h1>{title.toUpperCase()}</h1>
+const TitleBar = ({ title, buttons }) => {
+  const [patientState, setPatientState] = useState(null);
+  const { patient } = FHIR.useContainer();
 
-            <div class="buttonContainer">
-                {buttons.map(x => x)}
-            </div>
-        </div>
-    )
-}
+  useEffect(() => {
+    setPatientState(patient);
+  }, patient);
+
+  return (
+    <div class="titleBar">
+      <h1>
+        {title.toUpperCase()}{" "}
+        {patientState &&
+          `${patientState.name[0].given[0]} ${patientState.name[0].family}`}
+      </h1>
+      <div class="buttonContainer">{buttons.map((x) => x)}</div>
+    </div>
+  );
+};
+
+export default TitleBar;
