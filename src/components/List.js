@@ -12,6 +12,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons'
 import { Droppable, Draggable } from "react-beautiful-dnd";
 import { SliderPicker } from "react-color";
+import SnomedSearch from './SnomedSearch'; 
 
 
 export default function List({title, colour, rows, addRow, deleteRow, updateRowNumber, droppableId, transfer, showNotes, disableEdits, isLeft}){
@@ -159,7 +160,7 @@ function ListRow({colour, note, content, rowNumber, deleteRow, updateRowNumber, 
             <div style={{flexGrow: 1, display: "flex", flexDirection: "column"}}>
                 <div className="listEntry">
                     <FontAwesomeIcon style={{cursor: "grab"}} icon={faBars}/>
-                    <span style={{flexGrow: 1, marginLeft: "1em"}}> {content} </span>
+                    <span style={{flexGrow: 1, marginLeft: "1em"}}><SnomedSearch /></span>
                     <div>
                         <FontAwesomeIcon
                                 onClick={() => deleteRow(rowNumber - 1)}

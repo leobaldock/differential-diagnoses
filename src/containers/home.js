@@ -25,7 +25,7 @@ const Home = (props) => {
 
   /* Runs when metadata changes */
   useEffect(() => {
-    console.log(metadata);
+    // console.log(metadata);
     if (metadata) {
       setTokenUri(getSecurityUri(metadata, "token"));
     }
