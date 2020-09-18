@@ -84,9 +84,15 @@ const Home = (props) => {
    * Search for an EpisodeOfCare resource for this patient and create one if none exists.
    */
   const fetchCreateEpisodeOfCare = async () => {
-    let search = await searchResources("EpisodeOfCare", {
-      patient: `${iss}/Patient/${patient.id}`,
-    });
+    let search = await searchResources(
+      "EpisodeOfCare",
+      {
+        patient: `${iss}/Patient/${patient.id}`,
+      },
+      ["-date"] // TODO: Check this is working
+    );
+
+    console.log(search);
 
     if (search.entry.length > 0) {
       console.log(search.entry[0].resource);

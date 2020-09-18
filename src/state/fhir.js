@@ -10,8 +10,8 @@ const useFHIR = () => {
   const [accessToken, setAccessToken] = useLocalStorage("accessToken", null);
   const [patient, setPatient] = useState(null);
 
-  const searchResources = async (resourceType = "", params = {}) => {
-    const qs = queryString.stringify(params);
+  const searchResources = async (resourceType = "", params = {}, sort = []) => {
+    const qs = queryString.stringify({ ...params, _sort: sort.join() });
     const result = new Promise(function (resolve, reject) {
       fetch(`${iss}/${resourceType}?${qs}`, {
         headers: { Authorization: `Bearer ${accessToken}` },
@@ -113,7 +113,7 @@ const useFHIR = () => {
     getResource,
     createResource,
     makeRef,
-    getSecurityUri
+    getSecurityUri,
   };
 };
 
