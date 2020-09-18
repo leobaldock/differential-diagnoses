@@ -59,6 +59,7 @@ const Home = (props) => {
         if (data.patient) {
           /* Get the patient from the FHIR server */
           fetchPatient(data.patient, data.access_token);
+          createEpisodeOfCare(data.patient, data.access_token);
         }
       })
       .catch((error) => console.log(error));
@@ -73,6 +74,26 @@ const Home = (props) => {
         console.log(data);
         setPatient(data);
       });
+  };
+
+  const createEpisodeOfCare = (patientId, accessToken) => {
+    fetch(`${iss}/EpisodeOfCare`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/fhir+json",
+        Authorization: `Bearer ${accessToken}`,
+      },
+      body: JSON.stringify({
+        resourceType: "EpisodeOfCare",
+        status: "active",
+        patient: { reference: `${iss}/Patient/${patientId}` },
+      }),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        console.log(data);
+      })
+      .catch((err) => console.err(err));
   };
 
   return (
