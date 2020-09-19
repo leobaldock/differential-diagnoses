@@ -95,7 +95,7 @@ export default function List({title, colour, rows, addRow, deleteRow, updateRowN
                                                 content={row.displayName}
                                                 note={row.note}
                                                 rowNumber={index + 1}
-                                                colour={listColour}
+                                                listColour={listColour}
                                                 deleteRow={deleteRow}
                                                 updateRowNumber={updateRowNumber}
                                                 transfer={transfer}
@@ -125,7 +125,7 @@ export default function List({title, colour, rows, addRow, deleteRow, updateRowN
 }
 
 
-function ListRow({colour, note, content, rowNumber, deleteRow, updateRowNumber, transfer, showNotes, disableEdits, isLeft}) {
+function ListRow({listColour, note, content, rowNumber, deleteRow, updateRowNumber, transfer, showNotes, disableEdits, isLeft}) {
 
     const [inputNum, setInputNum] = useState(rowNumber);
     const [commentColour, setCommentColour] = useState("grey");
@@ -160,7 +160,9 @@ function ListRow({colour, note, content, rowNumber, deleteRow, updateRowNumber, 
             <div style={{flexGrow: 1, display: "flex", flexDirection: "column"}}>
                 <div className="listEntry">
                     <FontAwesomeIcon style={{cursor: "grab"}} icon={faBars}/>
-                    <span style={{flexGrow: 1, marginLeft: "1em"}}><SnomedSearch /></span>
+                    <span style={{flexGrow: 1, marginLeft: "1em", marginRight: "1em"}}>
+                        <SnomedSearch listColour={listColour} />
+                    </span>
                     <div>
                         <FontAwesomeIcon
                                 onClick={() => deleteRow(rowNumber - 1)}
@@ -175,7 +177,7 @@ function ListRow({colour, note, content, rowNumber, deleteRow, updateRowNumber, 
                                 style={{cursor: "pointer", paddingLeft:"0.5em"}}
                                 color={deleteColour}
                                 icon={faMinusCircle}
-                                onMouseEnter={() => setDeleteColour(colour)}
+                                onMouseEnter={() => setDeleteColour(listColour)}
                                 onMouseLeave={() => setDeleteColour("grey")}
                             />
                         }
@@ -188,7 +190,7 @@ function ListRow({colour, note, content, rowNumber, deleteRow, updateRowNumber, 
                         style={{cursor: "pointer", marginRight: "0.5em"}}
                         color={commentColour}
                         icon={faComment}
-                        onMouseEnter={() => setCommentColour(colour)}
+                        onMouseEnter={() => setCommentColour(listColour)}
                         onMouseLeave={() => setCommentColour("grey")}
                     />
                 </div>}

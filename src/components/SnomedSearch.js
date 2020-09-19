@@ -2,12 +2,13 @@
 import React from 'react';
 import AsyncSelect from 'react-select/async';
 
+
 const search = async (searchTerm) => {
 
     var searchResults = [];
 
     try {
-        const url = `https://ontoserver.csiro.au/stu3-latest/ValueSet/$expand?url=http://snomed.info/sct?fhir_vs=ecl/%3C%3C64572001&filter=${searchTerm}&count=10`;
+        const url = `https://ontoserver.csiro.au/stu3-latest/ValueSet/$expand?url=http://snomed.info/sct?fhir_vs=ecl/%3C%3C64572001&filter=${searchTerm}&count=5`;
         const res = await fetch(url);
         const json = await res.json();
         searchResults = json.expansion.contains;
@@ -31,24 +32,69 @@ export default class SnomedSearch extends React.Component {
         this.state = {
             searchTerm: "",
             searchResults: [],
-            snomedValue: {}
+            snomedValue: {},
+            customStyles: {
+                input: (provided) => ({
+                    ...provided,
+                    /* <input> search */
+                    color: this.props.listColour,
+                }),
+                singleValue: (provided) => ({
+                    /* saved value */
+                    ...provided,
+                    color: this.props.listColour,
+                }),
+                control: (provided, state) => ({
+                    /* default & :focused border */
+                    ...provided,
+                    border: "none",
+                    boxShadow: "none",
+                    transition: "0.5s ease",
+                    textTransform: "capitalize",
+                }),
+                menuList: (provided, state) => ({
+                    /* Search Results Container */
+                    ...provided,
+                    padding: 0,
+                    margin: 0,
+                    textTransform: "capitalize",
+                }),
+                option: (provided, {data, isFocused}) => ({
+                    /*A Search Result */
+                    ...provided,
+                    backgroundColor: isFocused
+                        ? this.props.listColour +"BA"
+                        : null,
+                    color: isFocused
+                        ? "white"
+                        : null,
+                }),
+                /* Library Things We Do Not Want*/
+                dropdownIndicator: (provided, state) => ({
+                    /* Down Chevron Arrow */
+                    display: "none",
+                }),
+                loadingIndicator: (provided, state) => ({
+                    /* Animated 3 Dot Loader */
+                    display: "none",
+                }),
+                indicatorSeparator: (provided, state) => ({
+                    /* | betweem input & chevron */
+                    display: "none",
+                }),
+                loadingMessage: (provided, state) => ({
+                    /* "Loading..." on search wait */
+                    display: "none",
+                }),
+                noOptionsMessage: (provided, state) => ({
+                    /* "No options..." on empty search result */
+                    display: "none",
+                }),
+              }
         }
 
-        // this.backOff = null;
-
-        // this.handleSearchChange = this.handleSearchChange.bind(this);
     }
 
-
-
-    // handleSearchChange(e) {
-    //     const searchTerm = e.target.value;
-
-    //     if (this.backOff) clearTimeout(this.backOff);
-    //     setTimeout(async () => this.setState({searchResults: await search(searchTerm, 5)}), 300);
-        
-    //     this.setState({searchTerm: searchTerm});
-    // }
 
     render() {
         const options = this.state.searchResults.map(result => ({
@@ -59,21 +105,13 @@ export default class SnomedSearch extends React.Component {
         return (
             <div>
                 <AsyncSelect
+                    styles={this.state.customStyles}
+                    listColour = {this.props.listColour}
                     placeholder="Type to search..."
                     cacheOptions
                     loadOptions={search}
                     className          
                 />
-                {/* <DropDown
-                    options={options}
-                    value={this.state.snomedValue.code}
-                    onChange={(option) => this.setState({snomedValue: this.state.searchResults.find(result => result.code == option.value)})}
-                    placeholder={<input 
-                        value={this.state.searchTerm}
-                        readOnly={false}
-                        onChange={(e) => console.log(e) || this.handleSearchChange}
-                    />}
-                /> */}
             </div>
         );
     }
