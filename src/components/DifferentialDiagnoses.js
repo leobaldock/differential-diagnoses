@@ -22,7 +22,7 @@ class DifferentialDiagnosis extends React.Component {
 
                 // {
                 //     id: "129842",
-                //     displayName: "Cancer",
+                //     content: "Cancer",
                 //     note: ""
                 // }
             ],
@@ -31,7 +31,7 @@ class DifferentialDiagnosis extends React.Component {
             answerListA: [
                 {
                     id: "239823",
-                    displayName: "Sample Answer",
+                    content: "Sample Answer",
                     note: "I am a sample answer. Thanks bruh!"
                 }
             ],
@@ -60,7 +60,7 @@ class DifferentialDiagnosis extends React.Component {
     addRow(list) {
         list.push({
             id: new Date().getTime(),
-            displayName: "Sample" + list.length,
+            content: "",
             note: ""
         });
 
@@ -260,13 +260,13 @@ class DifferentialDiagnosis extends React.Component {
                         yesCallback={() => this.deleteRow(...this.state.deletingRow)}
                         noCallback={() => this.setState({deletingRow: null})}
                     >
-                        {this.state.deletingRow[0][this.state.deletingRow[1]].displayName}
+                        {this.state.deletingRow[0][this.state.deletingRow[1]].content}
                     </Popup>
                 }
 
                 {this.state.showNotes &&
                     <Popup
-                        title={(this.state.showAnswers ? "Comment for " : "Add a comment for ") + this.state.showNotes.displayName}
+                        title={(this.state.showAnswers ? "Comment for " : "Add a comment for ") + this.state.showNotes.content}
                         noCallback={() => this.setState({showNotes: null})}
                         yesCallback={this.state.showAnswers ? null : () => {
                             const newList = [...this.state.showNotes.list];

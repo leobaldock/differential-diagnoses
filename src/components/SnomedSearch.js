@@ -12,7 +12,6 @@ const search = async (searchTerm) => {
         const res = await fetch(url);
         const json = await res.json();
         searchResults = json.expansion.contains;
-        console.log(searchResults);
     } catch(err) {
         console.log("Error while searching the ontology server");
     }
@@ -30,7 +29,7 @@ export default class SnomedSearch extends React.Component {
         super(props);
 
         this.state = {
-            searchTerm: "",
+            searchTerm: this.props.content,
             searchResults: [],
             snomedValue: {},
             customStyles: {
@@ -67,21 +66,9 @@ export default class SnomedSearch extends React.Component {
                         : null,
                     color: isFocused
                         ? "white"
-                        : null,
+                        : "null",
                 }),
                 /* Library Things We Do Not Want*/
-                dropdownIndicator: (provided, state) => ({
-                    /* Down Chevron Arrow */
-                    display: "none",
-                }),
-                loadingIndicator: (provided, state) => ({
-                    /* Animated 3 Dot Loader */
-                    display: "none",
-                }),
-                indicatorSeparator: (provided, state) => ({
-                    /* | betweem input & chevron */
-                    display: "none",
-                }),
                 loadingMessage: (provided, state) => ({
                     /* "Loading..." on search wait */
                     display: "none",
@@ -92,24 +79,38 @@ export default class SnomedSearch extends React.Component {
                 }),
               }
         }
-
     }
-
 
     render() {
         const options = this.state.searchResults.map(result => ({
             label: result.display,
             value: result.code
         }));
-
         return (
             <div>
                 <AsyncSelect
+                    defaultInputValue={this.state.searchTerm}
                     styles={this.state.customStyles}
                     listColour = {this.props.listColour}
-                    placeholder="Type to search..."
+                    components={{ 
+                        DropdownIndicator: null,
+                        LoadingIndicator: null,
+                        IndicatorSeparator: null,
+                     }}
+                    placeholder= {"Search..."}
                     cacheOptions
                     loadOptions={search}
+                    onInputChange={(inputValue, {action}) => {
+                        switch(action) {
+                            case 'input-change':
+                                this.setState({searchTerm: inputValue});
+                                return;
+                        }
+                    }}
+                    onChange={async (inputValue, data) => {
+                        await this.setState({searchTerm: inputValue.label});
+                        this.props.callback(this.state.searchTerm);
+                    }}
                     className          
                 />
             </div>

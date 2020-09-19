@@ -92,6 +92,11 @@ export default function List({title, colour, rows, addRow, deleteRow, updateRowN
                                     >
                                         <span>
                                             <ListRow
+                                                searchCallback= {(e) => {
+                                                    console.log("--search callback--");
+                                                    row.displayName = e;
+                                                    }
+                                                }
                                                 content={row.displayName}
                                                 note={row.note}
                                                 rowNumber={index + 1}
@@ -102,6 +107,7 @@ export default function List({title, colour, rows, addRow, deleteRow, updateRowN
                                                 showNotes={showNotes}
                                                 disableEdits={disableEdits}
                                                 isLeft= {isLeft}
+                                               
                                             />
                                         </span>
                                     </div>
@@ -125,7 +131,7 @@ export default function List({title, colour, rows, addRow, deleteRow, updateRowN
 }
 
 
-function ListRow({listColour, note, content, rowNumber, deleteRow, updateRowNumber, transfer, showNotes, disableEdits, isLeft}) {
+function ListRow({listColour, note, content, rowNumber, deleteRow, updateRowNumber, transfer, showNotes, disableEdits, isLeft, searchCallback}) {
 
     const [inputNum, setInputNum] = useState(rowNumber);
     const [commentColour, setCommentColour] = useState("grey");
@@ -145,7 +151,6 @@ function ListRow({listColour, note, content, rowNumber, deleteRow, updateRowNumb
     }
 
     useEffect(() => setInputNum(rowNumber), [rowNumber]);
-
     return (
         <div className="listRow">
             {!isLeft &&
@@ -161,7 +166,7 @@ function ListRow({listColour, note, content, rowNumber, deleteRow, updateRowNumb
                 <div className="listEntry">
                     <FontAwesomeIcon style={{cursor: "grab"}} icon={faBars}/>
                     <span style={{flexGrow: 1, marginLeft: "1em", marginRight: "1em"}}>
-                        <SnomedSearch listColour={listColour} />
+                        <SnomedSearch content={content} callback={searchCallback} listColour={listColour} />
                     </span>
                     <div>
                         <FontAwesomeIcon
