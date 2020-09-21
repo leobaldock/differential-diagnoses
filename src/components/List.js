@@ -15,7 +15,7 @@ import { SliderPicker } from "react-color";
 import SnomedSearch from './SnomedSearch'; 
 
 
-export default function List({title, colour, rows, addRow, deleteRow, updateRowNumber, droppableId, transfer, showNotes, disableEdits, isLeft}){
+export default function List({title, colour, rows, addRow, deleteRow, updateRowNumber, droppableId, transfer, showNotes, isLeft}){
     const [paletteVisibility, setPaletteVisibility] = useState(false);
     const [listColour, setListColour] = useState(colour);
     
@@ -79,7 +79,7 @@ export default function List({title, colour, rows, addRow, deleteRow, updateRowN
                     style={getListStyle(snapshot.isDraggingOver)}
                     >
                         {rows.map((row, index) => (
-                            <Draggable isDragDisabled={disableEdits} key={row.id} draggableId={row.id.toString(10)} index={index}>   
+                            <Draggable key={row.id} draggableId={row.id.toString(10)} index={index}>   
                                 {(provided, snapshot) => (
                                     <div
                                         ref={provided.innerRef}
@@ -105,7 +105,6 @@ export default function List({title, colour, rows, addRow, deleteRow, updateRowN
                                                 updateRowNumber={updateRowNumber}
                                                 transfer={transfer}
                                                 showNotes={showNotes}
-                                                disableEdits={disableEdits}
                                                 isLeft= {isLeft}
                                                
                                             />
@@ -120,18 +119,16 @@ export default function List({title, colour, rows, addRow, deleteRow, updateRowN
                 </Droppable>
 
                 
-                {!disableEdits &&
-                    (<div className="addRowButton">
+                <div className="addRowButton">
                         <span onClick={addRow}> + ADD NEW DIAGNOSIS </span>
-                    </div>)
-                }            
+                </div>      
             </div>
         </div>
     )
 }
 
 
-function ListRow({listColour, note, content, rowNumber, deleteRow, updateRowNumber, transfer, showNotes, disableEdits, isLeft, searchCallback}) {
+function ListRow({listColour, note, content, rowNumber, deleteRow, updateRowNumber, transfer, showNotes, isLeft, searchCallback}) {
 
     const [inputNum, setInputNum] = useState(rowNumber);
     const [commentColour, setCommentColour] = useState("grey");
@@ -160,7 +157,7 @@ function ListRow({listColour, note, content, rowNumber, deleteRow, updateRowNumb
             }
 
             <div className="listNumber">
-                <input readonly={disableEdits} style={{color: "white", background: "#00000060"}} value={inputNum} onChange={disableEdits ? () => {} : (e) => setInputNum(e.target.value)} onKeyDown={handleKeyDown} onBlur={handleBlur} type="text"/>
+                <input style={{color: "white", background: "#00000060"}} value={inputNum} onChange={(e) => setInputNum(e.target.value)} onKeyDown={handleKeyDown} onBlur={handleBlur} type="text"/>
             </div>
             <div style={{flexGrow: 1, display: "flex", flexDirection: "column"}}>
                 <div className="listEntry">
@@ -176,16 +173,14 @@ function ListRow({listColour, note, content, rowNumber, deleteRow, updateRowNumb
                                 icon={note ? faComment : faCommentMedical}
                                 onClick={() => setNotesOpen(!isNotesOpen)}
                             />
-                        {!disableEdits &&
-                            <FontAwesomeIcon
-                                onClick={() => deleteRow(rowNumber - 1)}
-                                style={{cursor: "pointer", paddingLeft:"0.5em"}}
-                                color={deleteColour}
-                                icon={faMinusCircle}
-                                onMouseEnter={() => setDeleteColour(listColour)}
-                                onMouseLeave={() => setDeleteColour("grey")}
-                            />
-                        }
+                        <FontAwesomeIcon
+                            onClick={() => deleteRow(rowNumber - 1)}
+                            style={{cursor: "pointer", paddingLeft:"0.5em"}}
+                            color={deleteColour}
+                            icon={faMinusCircle}
+                            onMouseEnter={() => setDeleteColour(listColour)}
+                            onMouseLeave={() => setDeleteColour("grey")}
+                        />
                     </div>
                 </div>
                 {isNotesOpen && <div className="listEntry" style={{backgroundColor: "#00000040", color: "white"}}>

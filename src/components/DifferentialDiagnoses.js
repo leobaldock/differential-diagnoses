@@ -27,17 +27,6 @@ class DifferentialDiagnosis extends React.Component {
                 // }
             ],
             listB: [],
-
-            answerListA: [
-                {
-                    id: "239823",
-                    content: "Sample Answer",
-                    note: "I am a sample answer. Thanks bruh!"
-                }
-            ],
-            answerListB: [],
-            showAnswers: false,
-
             showNotes: null, // row object
             deletingRow: null // [list, index]
         }
@@ -204,12 +193,6 @@ class DifferentialDiagnosis extends React.Component {
 
         const pageTitleButtons = [
             <FontAwesomeIcon icon={faSave} size="3x" style={{cursor: "pointer"}}/>,
-            <FontAwesomeIcon
-                icon={faEye}
-                size="3x"
-                style={{cursor: "pointer"}}
-                onClick={() => this.setState({showAnswers: !this.state.showAnswers})}
-            />
         ]
 
         return (
@@ -218,36 +201,28 @@ class DifferentialDiagnosis extends React.Component {
                 <div className="listContainer">
                     <DragDropContext onDragEnd={this.onDragEnd}>
                         <List
-                            title={`Likely Diagnoses${this.state.showAnswers ? " (answers)" : ""}`}
+                            title={`Likely Diagnoses`}
                             colour="#5DAD89"
                             droppableId="droppable1"
-                            disableEdits={this.state.showAnswers}
-                            rows={this.state.showAnswers ? this.state.answerListA : this.state.listA}
-                            addRow={this.state.showAnswers ? () => {} : () => this.addRow(this.state.listA)}
-                            deleteRow={this.state.showAnswers ? () => {} : (index) => this.setState({deletingRow: [this.state.listA, index]})}
-                            updateRowNumber={this.state.showAnswers ? () => {} : (from, to) => this.setState({listA: this.reorder(this.state.listA, from, to)})}
-                            transfer={this.state.showAnswers ? () => {} : (index) => this.manualMove(this.state.listA, this.state.listB, index, 0)}
-                            showNotes={this.state.showAnswers ?
-                                (index) => this.setState({showNotes: {...this.state.answerListA[index], list: this.state.answerListA}})
-                                :
-                                (index) => this.setState({showNotes: {...this.state.listA[index], list: this.state.listA}})
+                            rows={this.state.listA}
+                            addRow={() => this.addRow(this.state.listA)}
+                            deleteRow={(index) => this.setState({deletingRow: [this.state.listA, index]})}
+                            updateRowNumber={(from, to) => this.setState({listA: this.reorder(this.state.listA, from, to)})}
+                            transfer={(index) => this.manualMove(this.state.listA, this.state.listB, index, 0)}
+                            showNotes={(index) => this.setState({showNotes: {...this.state.listA[index], list: this.state.listA}})
                             }
                             isLeft= {true}
                         />
                         <List
-                            title={`Critical${this.state.showAnswers ? " (answers)" : ""}`}
+                            title={`Critical`}
                             colour="#DA7676"
                             droppableId="droppable2"
-                            disableEdits={this.state.showAnswers}
-                            rows={this.state.showAnswers ? this.state.answerListB : this.state.listB}
-                            addRow={this.state.showAnswers ? () => {} : () => this.addRow(this.state.listB)}
-                            deleteRow={this.state.showAnswers ? () => {} : (index) => this.setState({deletingRow: [this.state.listB, index]})}
-                            updateRowNumber={this.state.showAnswers ? () => {} : (from, to) => this.setState({listB: this.reorder(this.state.listB, from, to)})}
-                            transfer={this.state.showAnswers ? () => {} : (index) => this.manualMove(this.state.listB, this.state.listA, index, 0)}
-                            showNotes={this.state.showAnswers ?
-                                (index) => this.setState({showNotes: {...this.state.answerListB[index], list: this.state.answerListB}})
-                                :
-                                (index) => this.setState({showNotes: {...this.state.listB[index], list: this.state.listB}})
+                            rows={this.state.listB}
+                            addRow={() => this.addRow(this.state.listB)}
+                            deleteRow={(index) => this.setState({deletingRow: [this.state.listB, index]})}
+                            updateRowNumber={(from, to) => this.setState({listB: this.reorder(this.state.listB, from, to)})}
+                            transfer={(index) => this.manualMove(this.state.listB, this.state.listA, index, 0)}
+                            showNotes={(index) => this.setState({showNotes: {...this.state.listB[index], list: this.state.listB}})
                             }
                             isLeft= {false}
                        />
@@ -266,9 +241,9 @@ class DifferentialDiagnosis extends React.Component {
 
                 {this.state.showNotes &&
                     <Popup
-                        title={(this.state.showAnswers ? "Comment for " : "Add a comment for ") + this.state.showNotes.content}
+                        title={"Add a comment for " + this.state.showNotes.content}
                         noCallback={() => this.setState({showNotes: null})}
-                        yesCallback={this.state.showAnswers ? null : () => {
+                        yesCallback={() => {
                             const newList = [...this.state.showNotes.list];
                             const item = newList.find(x => x.id == this.state.showNotes.id);
                             if (item) item.note = this.state.showNotes.note;
@@ -286,7 +261,6 @@ class DifferentialDiagnosis extends React.Component {
                     >
                         <textarea
                             className="commentBox"
-                            readOnly={this.state.showAnswers}
                             value={this.state.showNotes.note}
                             onChange={(e) => {
                                 let row = this.state.showNotes;
