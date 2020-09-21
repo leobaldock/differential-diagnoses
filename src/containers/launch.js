@@ -3,11 +3,10 @@
  * This page is reposible for performing initial SMART on FHIR setup.
  */
 
-import React, { useState, useEffect } from "react";
+import React, { useEffect } from "react";
 import { useLocation, useHistory } from "react-router-dom";
 import queryString from "query-string";
 import FHIR from "../state/fhir";
-import { getSecurityUri } from "../util/fhir";
 
 const Launch = (props) => {
   const location = useLocation();
@@ -20,6 +19,7 @@ const Launch = (props) => {
     setLaunch,
     metadata,
     setMetadata,
+    getSecurityUri,
   } = FHIR.useContainer();
 
   /* Runs when the query params change */
@@ -49,7 +49,7 @@ const Launch = (props) => {
   };
 
   const redirectToAuth = () => {
-    const authUri = getSecurityUri(metadata, "authorize");
+    const authUri = getSecurityUri("authorize");
 
     /* TODO: don't hardcode this stuff */
     const qs = queryString.stringify({

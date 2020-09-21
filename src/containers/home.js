@@ -2,14 +2,11 @@
  * Main application page.
  */
 
-import React, { useEffect, useState } from "react";
 import queryString from "query-string";
-import * as HTTP from "../api";
-
-import FHIR from "../state/fhir";
-import { getSecurityUri } from "../util/fhir";
-
+import React, { useEffect, useState } from "react";
 import DifferentialDiagnoses from "../components/DifferentialDiagnoses";
+import FHIR from "../state/fhir";
+import { encodeFormData } from "../util/http";
 
 const Home = (props) => {
   const {
@@ -17,27 +14,46 @@ const Home = (props) => {
     metadata,
     accessToken,
     setAccessToken,
+    patient,
     setPatient,
+    searchResources,
+    getResource,
+    createResource,
+    makeRef,
+    getSecurityUri,
   } = FHIR.useContainer();
   const [tokenUri, setTokenUri] = useState(null);
+  const [contextData, setContextData] = useState(null);
 
   const params = queryString.parse(props.location.search);
 
   /* Runs when metadata changes */
   useEffect(() => {
-    console.log(metadata);
     if (metadata) {
-      setTokenUri(getSecurityUri(metadata, "token"));
+      setTokenUri(getSecurityUri("token"));
     }
   }, [metadata]);
 
   /* Runs when token data changes */
   useEffect(() => {
-    console.log(tokenUri);
     if (tokenUri) {
       fetchAccessToken();
     }
   }, [tokenUri]);
+
+  /* Runs when access token changes */
+  useEffect(() => {
+    if (accessToken && contextData) {
+      fetchPatient(contextData.patient);
+    }
+  }, [accessToken, contextData]);
+
+  /* Runs when patient resource changes */
+  useEffect(() => {
+    if (patient) {
+      fetchCreateEpisodeOfCare();
+    }
+  }, [patient]);
 
   const fetchAccessToken = () => {
     fetch(tokenUri, {
@@ -45,7 +61,7 @@ const Home = (props) => {
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",
       },
-      body: HTTP.encodeFormData({
+      body: encodeFormData({
         grant_type: "authorization_code",
         code: params.code,
         redirect_uri: "http://localhost:3000",
@@ -54,25 +70,43 @@ const Home = (props) => {
     })
       .then((res) => res.json())
       .then((data) => {
-        console.log(data);
+        setContextData({ patient: data.patient });
         setAccessToken(data.access_token);
-        if (data.patient) {
-          /* Get the patient from the FHIR server */
-          fetchPatient(data.patient, data.access_token);
-        }
       })
       .catch((error) => console.log(error));
   };
 
-  const fetchPatient = (patientId, accessToken) => {
-    fetch(`${iss}/Patient/${patientId}`, {
-      headers: { Authorization: `Bearer ${accessToken}` },
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        console.log(data);
-        setPatient(data);
-      });
+  const fetchPatient = async (patientId) => {
+    getResource(`Patient/${patientId}`).then((res) => setPatient(res));
+  };
+
+  /**
+   * Search for an EpisodeOfCare resource for this patient and create one if none exists.
+   */
+  const fetchCreateEpisodeOfCare = async () => {
+    let search = await searchResources(
+      "EpisodeOfCare",
+      {
+        patient: `${iss}/Patient/${patient.id}`,
+      },
+      ["-date"] // TODO: Check this is working
+    );
+
+    console.log(search);
+
+    if (search.entry.length > 0) {
+      console.log(search.entry[0].resource);
+      return search.entry[0].resource;
+    }
+
+    const episodeOfCare = await createResource("EpisodeOfCare", {
+      resourceType: "EpisodeOfCare",
+      status: "active",
+      patient: { reference: makeRef(patient) },
+    });
+
+    console.log(episodeOfCare);
+    return episodeOfCare;
   };
 
   return (

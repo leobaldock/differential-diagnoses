@@ -5,6 +5,7 @@ import queryString from 'query-string'
 import Home from "./containers/home";
 import NotFound from "./containers/notFound";
 import Launch from "./containers/launch";
+import SnomedSearch from "./components/SnomedSearch";
 
 const Routes = (props) => {
   const location = useLocation();
@@ -31,6 +32,7 @@ const Routes = (props) => {
             return null;
           }}
         />
+        <Route path="/snomed" component={SnomedSearch} />
         <Route path="/" component={NotFound} />
       </Switch>
     );

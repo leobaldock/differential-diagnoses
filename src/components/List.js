@@ -7,10 +7,12 @@ import {
     faAngleDoubleRight,
     faAngleDoubleLeft,
     faPalette,
-    faComment
+    faComment,
+    faCommentMedical
 } from '@fortawesome/free-solid-svg-icons'
 import { Droppable, Draggable } from "react-beautiful-dnd";
 import { SliderPicker } from "react-color";
+import SnomedSearch from './SnomedSearch'; 
 
 
 export default function List({title, colour, rows, addRow, deleteRow, updateRowNumber, droppableId, transfer, showNotes, disableEdits, isLeft}){
@@ -90,15 +92,22 @@ export default function List({title, colour, rows, addRow, deleteRow, updateRowN
                                     >
                                         <span>
                                             <ListRow
+                                                searchCallback= {(e) => {
+                                                    console.log("--search callback--");
+                                                    row.displayName = e;
+                                                    }
+                                                }
                                                 content={row.displayName}
+                                                note={row.note}
                                                 rowNumber={index + 1}
-                                                colour={listColour}
+                                                listColour={listColour}
                                                 deleteRow={deleteRow}
                                                 updateRowNumber={updateRowNumber}
                                                 transfer={transfer}
                                                 showNotes={showNotes}
                                                 disableEdits={disableEdits}
                                                 isLeft= {isLeft}
+                                               
                                             />
                                         </span>
                                     </div>
@@ -122,11 +131,14 @@ export default function List({title, colour, rows, addRow, deleteRow, updateRowN
 }
 
 
-function ListRow({colour, content, rowNumber, deleteRow, updateRowNumber, transfer, showNotes, disableEdits, isLeft}) {
+function ListRow({listColour, note, content, rowNumber, deleteRow, updateRowNumber, transfer, showNotes, disableEdits, isLeft, searchCallback}) {
 
     const [inputNum, setInputNum] = useState(rowNumber);
     const [commentColour, setCommentColour] = useState("grey");
+    const [chevronColour, setChevronColour] = useState("grey");
     const [deleteColour, setDeleteColour] = useState("grey");
+    const [isNotesOpen, setNotesOpen] = useState(false);
+
 
     const handleKeyDown = (e) => {
         if (e.key == "Enter") {
@@ -139,7 +151,6 @@ function ListRow({colour, content, rowNumber, deleteRow, updateRowNumber, transf
     }
 
     useEffect(() => setInputNum(rowNumber), [rowNumber]);
-
     return (
         <div className="listRow">
             {!isLeft &&
@@ -151,29 +162,43 @@ function ListRow({colour, content, rowNumber, deleteRow, updateRowNumber, transf
             <div className="listNumber">
                 <input readonly={disableEdits} style={{color: "white", background: "#00000060"}} value={inputNum} onChange={disableEdits ? () => {} : (e) => setInputNum(e.target.value)} onKeyDown={handleKeyDown} onBlur={handleBlur} type="text"/>
             </div>
-            <div className="listEntry">
-                <FontAwesomeIcon style={{cursor: "grab"}} icon={faBars}/>
-                <span style={{flexGrow: 1, marginLeft: "1em"}}> {content} </span>
-                <div>
+            <div style={{flexGrow: 1, display: "flex", flexDirection: "column"}}>
+                <div className="listEntry">
+                    <FontAwesomeIcon style={{cursor: "grab"}} icon={faBars}/>
+                    <span style={{flexGrow: 1, marginLeft: "1em", marginRight: "1em"}}>
+                        <SnomedSearch content={content} callback={searchCallback} listColour={listColour} />
+                    </span>
+                    <div>
+                        <FontAwesomeIcon
+                                onClick={() => deleteRow(rowNumber - 1)}
+                                style={{cursor: "pointer", transition: "0.1s ease"}}
+                                color={commentColour}
+                                icon={note ? faComment : faCommentMedical}
+                                onClick={() => setNotesOpen(!isNotesOpen)}
+                            />
+                        {!disableEdits &&
+                            <FontAwesomeIcon
+                                onClick={() => deleteRow(rowNumber - 1)}
+                                style={{cursor: "pointer", paddingLeft:"0.5em"}}
+                                color={deleteColour}
+                                icon={faMinusCircle}
+                                onMouseEnter={() => setDeleteColour(listColour)}
+                                onMouseLeave={() => setDeleteColour("grey")}
+                            />
+                        }
+                    </div>
+                </div>
+                {isNotesOpen && <div className="listEntry" style={{backgroundColor: "#00000040", color: "white"}}>
+                    <div style={{flexGrow: 1}}>{note}</div>
                     <FontAwesomeIcon
                         onClick={() => showNotes(rowNumber - 1)} 
                         style={{cursor: "pointer", marginRight: "0.5em"}}
                         color={commentColour}
                         icon={faComment}
-                        onMouseEnter={() => setCommentColour(colour)}
+                        onMouseEnter={() => setCommentColour(listColour)}
                         onMouseLeave={() => setCommentColour("grey")}
                     />
-                    {!disableEdits &&
-                        <FontAwesomeIcon
-                            onClick={() => deleteRow(rowNumber - 1)}
-                            style={{cursor: "pointer"}}
-                            color={deleteColour}
-                            icon={faMinusCircle}
-                            onMouseEnter={() => setDeleteColour(colour)}
-                            onMouseLeave={() => setDeleteColour("grey")}
-                        />
-                    }
-                </div>
+                </div>}
             </div>
             {isLeft &&
                 <div className="transferButton" onClick={() => transfer(rowNumber - 1)}>
