@@ -85,33 +85,16 @@ class DifferentialDiagnosis extends React.Component {
   }
 
   reorder(list, startIndex, endIndex) {
-    if (list.length < 2) return;
+    const result = Array.from(list);
+    if (list.length < 2) return result;
     // Go to top of list
     if (endIndex < 0) endIndex = 0;
     // Go to bottom of list
     if (endIndex >= list.length) endIndex = list.length - 1;
 
-    const result = Array.from(list);
     const [removed] = result.splice(startIndex, 1);
     result.splice(endIndex, 0, removed);
     return result;
-  }
-
-  onDragEnd(result) {
-    // dropped outside the list
-    if (!result.destination) {
-      return;
-    }
-
-    const items = this.reorder(
-      this.state.listA,
-      result.source.index,
-      result.destination.index
-    );
-
-    this.setState({
-      listA: items,
-    });
   }
 
   getList(id) {
