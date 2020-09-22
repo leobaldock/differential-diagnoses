@@ -22,7 +22,10 @@ class DifferentialDiagnosis extends React.Component {
 
                 // {
                 //     id: "129842",
-                //     content: "Cancer",
+                //     snomed: {
+                //        code: 1233,
+                //        display: "cancer"
+                //     },
                 //     note: ""
                 // }
             ],
@@ -49,13 +52,13 @@ class DifferentialDiagnosis extends React.Component {
     addRow(list) {
         list.push({
             id: new Date().getTime(),
-            content: "",
+            snomed: {},
             note: ""
         });
 
         if (list == this.state.listA) this.setState({listA: [...list]});
         else if (list == this.state.listB) this.setState({listB: [...list]});
-        else console.log("Unkown list");
+        else console.log("Unknown list");
     }
 
     deleteRow(list, index) {
@@ -67,7 +70,7 @@ class DifferentialDiagnosis extends React.Component {
 
         if (list == this.state.listA) newState.listA = list;
         else if (list == this.state.listB) newState.listB = list;
-        else console.log("Unkown list");
+        else console.log("Unknown list");
 
         this.setState(newState);
     }

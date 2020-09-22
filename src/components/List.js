@@ -92,12 +92,12 @@ export default function List({title, colour, rows, addRow, deleteRow, updateRowN
                                     >
                                         <span>
                                             <ListRow
-                                                searchCallback= {(e) => {
+                                                searchCallback= {(newSnomed) => {
                                                     console.log("--search callback--");
-                                                    row.displayName = e;
+                                                    row.snomed = newSnomed;
                                                     }
                                                 }
-                                                content={row.displayName}
+                                                content={row.snomed}
                                                 note={row.note}
                                                 rowNumber={index + 1}
                                                 listColour={listColour}
@@ -106,7 +106,6 @@ export default function List({title, colour, rows, addRow, deleteRow, updateRowN
                                                 transfer={transfer}
                                                 showNotes={showNotes}
                                                 isLeft= {isLeft}
-                                               
                                             />
                                         </span>
                                     </div>
