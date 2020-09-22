@@ -103,13 +103,6 @@ const Home = (props) => {
       resourceType: "EpisodeOfCare",
       status: "active",
       patient: { reference: makeRef(patient) },
-      // diagnoses: [
-      //   {
-      //     condition: { reference: makeRef(condition)}
-      //     role:
-      //     rank: 1
-      //   }
-      // ]
     });
 
     console.log(episodeOfCare);
