@@ -25,7 +25,7 @@
 
 .list{
     flex-grow: 1;
-    flex-basis: 1px;
+    flex-basis: 0px;
     display: flex;
     flex-direction: column;
     max-height: 80vh;

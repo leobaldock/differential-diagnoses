@@ -29,14 +29,15 @@ export default class SnomedSearch extends React.Component {
         super(props);
 
         this.state = {
-            searchTerm: this.props.content,
-            searchResults: [],
-            snomedValue: {},
+            // searchTerm: this.props.content.display,
+            // searchResults: [],
+            snomedValue: this.props.content,
             customStyles: {
                 input: (provided) => ({
                     ...provided,
                     /* <input> search */
                     color: this.props.listColour,
+
                 }),
                 singleValue: (provided) => ({
                     /* saved value */
@@ -82,14 +83,17 @@ export default class SnomedSearch extends React.Component {
     }
 
     render() {
-        const options = this.state.searchResults.map(result => ({
-            label: result.display,
-            value: result.code
-        }));
+
+        // So this is a bit messy, but bare with me.
+        // If we are pre-populating the search (due to a list swap), don't provide
+        // a value to the AsyncSelect so that it shows the placeholder text properly.
+        const valueProp = {};
+        if (this.props.content.code) valueProp.value = {label: this.state.snomedValue?.display, value: this.state.snomedValue?.code};
+
         return (
             <div>
                 <AsyncSelect
-                    defaultInputValue={this.state.searchTerm}
+                    {...valueProp}
                     styles={this.state.customStyles}
                     listColour = {this.props.listColour}
                     components={{ 
@@ -103,13 +107,15 @@ export default class SnomedSearch extends React.Component {
                     onInputChange={(inputValue, {action}) => {
                         switch(action) {
                             case 'input-change':
-                                this.setState({searchTerm: inputValue});
+                                this.setState({snomedValue: {code: inputValue.value, display: inputValue.label}});
                                 return;
                         }
                     }}
                     onChange={async (inputValue, data) => {
-                        await this.setState({searchTerm: inputValue.label});
-                        this.props.callback(this.state.searchTerm);
+                        console.log(inputValue);
+                        console.log(data);
+                        await this.setState({snomedValue: {code: inputValue.value, display: inputValue.label}});
+                        this.props.callback({code: inputValue.value, display: inputValue.label});
                     }}
                     className          
                 />
