@@ -39,7 +39,7 @@
     position: relative;
 }
 
-.listRowContainer div:first-of-type{
+.listRowScroll{
     overflow-y: scroll;
     max-height: 58vh;
 }

@@ -71,7 +71,7 @@ export default function List({title, colour, rows, addRow, deleteRow, updateRowN
             )}
 
             <div className="listRowContainer">
-                <div>
+                <div className="listRowScroll">
                     <Droppable droppableId={droppableId}>
                     {(provided, snapshot) => (
                         <div
