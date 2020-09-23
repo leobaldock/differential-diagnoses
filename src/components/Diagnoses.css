@@ -48,7 +48,11 @@
     font-size: inherit;
 }
 
-.listNumber input{
+.listNumber {
+    height: 3.5em;
+}
+
+.listNumber input {
     height: calc(100% - 1em);
     width: 2.5em;
     padding: 0.5em;
@@ -93,6 +97,7 @@
     align-items: center;
     justify-content: center;
     color: #ffffffA9;
+    height: 3.5em;
 }
 
 .transferButton:hover{

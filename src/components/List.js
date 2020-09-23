@@ -143,7 +143,13 @@ function ListRow({listColour, note, content, rowNumber, deleteRow, updateRowNumb
             }
 
             <div className="listNumber">
-                <input style={{color: "white", background: "#00000060"}} value={inputNum} onChange={(e) => setInputNum(e.target.value)} onKeyDown={handleKeyDown} onBlur={handleBlur} type="text"/>
+                <input
+                    style={{color: "white", background: "#00000060"}}
+                    value={inputNum} onChange={(e) => setInputNum(e.target.value.replace(/[^0-9\.]+/g, ''))}
+                    onKeyDown={handleKeyDown}
+                    onBlur={handleBlur}
+                    type="text"
+                />
             </div>
             <div style={{flexGrow: 1, display: "flex", flexDirection: "column"}}>
                 <div className="listEntry">
