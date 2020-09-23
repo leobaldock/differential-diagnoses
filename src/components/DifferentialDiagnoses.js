@@ -6,6 +6,7 @@ import Popup from "./Popup";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSave, faEye } from "@fortawesome/free-solid-svg-icons";
 import { DragDropContext } from "react-beautiful-dnd";
+import { withFHIR } from "../state/fhir";
 
 class DifferentialDiagnosis extends React.Component {
   constructor(props) {
@@ -182,7 +183,34 @@ class DifferentialDiagnosis extends React.Component {
   }
 
   saveToFHIR() {
-    console.log(this.state.listA);
+    const { FHIR } = this.props;
+    console.log(FHIR)
+    const diagnosis = this.state.listA.map((e, index) => {
+      /* Create a condition for each item in the list */
+      const resource = FHIR.createResource("Condition", {
+        resourceType: "Condition",
+        subject: { reference: FHIR.makeRef(FHIR.patient) },
+        code: {
+          system: "http://snomed.info/sct/",
+          code: e.code,
+          display: e.display,
+        },
+      });
+
+      return {
+        condition: FHIR.makeRef(resource),
+        role: { text: "Likely" },
+        rank: index + 1,
+      };
+    });
+
+    FHIR.updateResource(`EpisodeOfCare/${FHIR.episodeOfCare.id}`, {
+      resourceType: "EpisodeOfCare",
+      id: FHIR.episodeOfCare.id,
+      status: "active",
+      patient: { reference: FHIR.makeRef(FHIR.patient) },
+    //   diagnosis,
+    });
   }
 
   render() {
@@ -307,4 +335,4 @@ class DifferentialDiagnosis extends React.Component {
   }
 }
 
-export default DifferentialDiagnosis;
+export default withFHIR(DifferentialDiagnosis);

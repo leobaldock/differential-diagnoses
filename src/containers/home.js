@@ -16,6 +16,7 @@ const Home = (props) => {
     setAccessToken,
     patient,
     setPatient,
+    setEpisodeOfCare,
     searchResources,
     getResource,
     createResource,
@@ -92,11 +93,9 @@ const Home = (props) => {
       ["-date"] // TODO: Check this is working
     );
 
-    console.log(search);
-
     if (search.entry.length > 0) {
       console.log(search.entry[0].resource);
-      return search.entry[0].resource;
+      setEpisodeOfCare(search.entry[0].resource);
     }
 
     const episodeOfCare = await createResource("EpisodeOfCare", {
@@ -105,8 +104,7 @@ const Home = (props) => {
       patient: { reference: makeRef(patient) },
     });
 
-    console.log(episodeOfCare);
-    return episodeOfCare;
+    setEpisodeOfCare(episodeOfCare);
   };
 
   return (

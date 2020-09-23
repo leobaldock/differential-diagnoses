@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { createContainer } from "unstated-next";
 import queryString from "query-string";
 import useLocalStorage from "../hooks/useLocalStorage";
@@ -9,6 +9,7 @@ const useFHIR = () => {
   const [metadata, setMetadata] = useLocalStorage("metadata", null);
   const [accessToken, setAccessToken] = useLocalStorage("accessToken", null);
   const [patient, setPatient] = useState(null);
+  const [episodeOfCare, setEpisodeOfCare] = useState(null);
 
   const searchResources = async (resourceType = "", params = {}, sort = []) => {
     const qs = queryString.stringify({ ...params, _sort: sort.join() });
@@ -79,6 +80,32 @@ const useFHIR = () => {
     return result;
   };
 
+  const updateResource = async (path = "", data = {}) => {
+    const result = new Promise(function (resolve, reject) {
+      fetch(`${iss}/${path}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/fhir+json",
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify(data),
+      })
+        .then((res) => {
+          resolve(res.json());
+        })
+        .catch((err) => {
+          reject(
+            Error(
+              "An error occurred while updating that resource: " +
+                err.toString()
+            )
+          );
+        });
+    });
+
+    return result;
+  };
+
   /**
    * Constructs an absolute URL reference to a FHIR resource which can be used as
    * a value in the reference field of other resources
@@ -109,9 +136,12 @@ const useFHIR = () => {
     setAccessToken,
     patient,
     setPatient,
+    episodeOfCare,
+    setEpisodeOfCare,
     searchResources,
     getResource,
     createResource,
+    updateResource,
     makeRef,
     getSecurityUri,
   };
@@ -119,3 +149,9 @@ const useFHIR = () => {
 
 const FHIR = createContainer(useFHIR);
 export default FHIR;
+
+export function withFHIR(Component) {
+  return function WrappedComponent(props) {
+    return <Component {...props} FHIR={FHIR.useContainer()} />;
+  };
+}
