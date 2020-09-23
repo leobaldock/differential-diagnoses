@@ -26,7 +26,6 @@ class DifferentialDiagnosis extends React.Component {
         // }
       ],
       listB: [],
-      showNotes: null, // row object
       deletingRow: null, // [list, index]
     };
 
@@ -86,33 +85,16 @@ class DifferentialDiagnosis extends React.Component {
   }
 
   reorder(list, startIndex, endIndex) {
-    if (list.length < 2) return;
+    const result = Array.from(list);
+    if (list.length < 2) return result;
     // Go to top of list
     if (endIndex < 0) endIndex = 0;
     // Go to bottom of list
     if (endIndex >= list.length) endIndex = list.length - 1;
 
-    const result = Array.from(list);
     const [removed] = result.splice(startIndex, 1);
     result.splice(endIndex, 0, removed);
     return result;
-  }
-
-  onDragEnd(result) {
-    // dropped outside the list
-    if (!result.destination) {
-      return;
-    }
-
-    const items = this.reorder(
-      this.state.listA,
-      result.source.index,
-      result.destination.index
-    );
-
-    this.setState({
-      listA: items,
-    });
   }
 
   getList(id) {
@@ -123,6 +105,7 @@ class DifferentialDiagnosis extends React.Component {
     const sourceClone = Array.from(sourceList);
     const destClone = Array.from(destinationList);
     const [removed] = sourceClone.splice(sourceIndex, 1);
+
     destClone.splice(destinationIndex, 0, removed);
 
     let newState = {};
@@ -224,66 +207,53 @@ class DifferentialDiagnosis extends React.Component {
     ];
 
     return (
-      <div
-        style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}
-      >
+      <div style={{ height: "100vh", display: "flex", flexDirection: "column" }}>
+
         <TitleBar title="Differential Diagnoses" buttons={pageTitleButtons} />
+
         <div className="listContainer">
           <DragDropContext onDragEnd={this.onDragEnd}>
+
             <List
               title={`Likely Diagnoses`}
               colour="#5DAD89"
               droppableId="droppable1"
               rows={this.state.listA}
               addRow={() => this.addRow(this.state.listA)}
-              deleteRow={(index) =>
-                this.setState({ deletingRow: [this.state.listA, index] })
-              }
-              updateRowNumber={(from, to) =>
-                this.setState({
-                  listA: this.reorder(this.state.listA, from, to),
-                })
-              }
-              transfer={(index) =>
-                this.manualMove(this.state.listA, this.state.listB, index, 0)
-              }
-              showNotes={(index) =>
-                this.setState({
-                  showNotes: {
-                    ...this.state.listA[index],
-                    list: this.state.listA,
-                  },
-                })
-              }
+              deleteRow={index => this.setState({ deletingRow: [this.state.listA, index] })}
+              updateRowNumber={(from, to) => this.setState({ listA: this.reorder(this.state.listA, from, to) })}
+              transfer={index => this.manualMove(this.state.listA, this.state.listB, index, 0)}
+              setSnomed={(row, newSnomed) => {
+                row.snomed = newSnomed;
+                this.setState({listA: [...this.state.listA] });
+              }}
+              setNote={(row, newNote) => {
+                row.note = newNote;
+                this.setState({listA: [...this.state.listA] });
+              }}
               isLeft={true}
             />
+
             <List
               title={`Critical`}
               colour="#DA7676"
               droppableId="droppable2"
               rows={this.state.listB}
               addRow={() => this.addRow(this.state.listB)}
-              deleteRow={(index) =>
-                this.setState({ deletingRow: [this.state.listB, index] })
-              }
-              updateRowNumber={(from, to) =>
-                this.setState({
-                  listB: this.reorder(this.state.listB, from, to),
-                })
-              }
-              transfer={(index) =>
-                this.manualMove(this.state.listB, this.state.listA, index, 0)
-              }
-              showNotes={(index) =>
-                this.setState({
-                  showNotes: {
-                    ...this.state.listB[index],
-                    list: this.state.listB,
-                  },
-                })
-              }
+              deleteRow={index => this.setState({ deletingRow: [this.state.listB, index] })}
+              updateRowNumber={(from, to) => this.setState({ listB: this.reorder(this.state.listB, from, to) })}
+              transfer={index => this.manualMove(this.state.listB, this.state.listA, index, 0)}
+              setSnomed={(row, newSnomed) => {
+                row.snomed = newSnomed;
+                this.setState({listB: [...this.state.listB] });
+              }}
+              setNote={(row, newNote) => {
+                row.note = newNote;
+                this.setState({listB: [...this.state.listB] });
+              }}
               isLeft={false}
             />
+            
           </DragDropContext>
         </div>
 
@@ -297,20 +267,20 @@ class DifferentialDiagnosis extends React.Component {
           </Popup>
         )}
 
-        {this.state.showNotes && (
+        {/* {this.state.showNotes && (
           <Popup
             title={"Add a comment for " + this.state.showNotes.content}
             noCallback={() => this.setState({ showNotes: null })}
             yesCallback={() => {
               const newList = [...this.state.showNotes.list];
-              const item = newList.find((x) => x.id == this.state.showNotes.id);
+              const item = newList.find(x => x.id == this.state.showNotes.id);
               if (item) item.note = this.state.showNotes.note;
 
               const newState = {
                 showNotes: null,
               };
 
-              if (this.state.showNotes.list == this.state.listA)
+              if (this.state.showNotes.list == this.state.listA) 
                 newState.listA = newList;
               else if (this.state.showNotes.list == this.state.listB)
                 newState.listB = newList;
@@ -329,7 +299,7 @@ class DifferentialDiagnosis extends React.Component {
               }}
             />
           </Popup>
-        )}
+        )} */}
       </div>
     );
   }
