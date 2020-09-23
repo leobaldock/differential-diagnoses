@@ -62,8 +62,30 @@
     margin: 0 1em;
     flex-grow: 1;
     background-color: white;
-    padding: 1em;
+    padding: 0.75em 1em;
     align-items: center;
+}
+
+.note {
+    background-color: #00000040;
+    color: "white";
+    padding: "0.5em";
+    margin: 0 1em;
+    display: flex;
+    flex-grow: 1;
+    padding: 0.5em;
+}
+
+.note textarea {
+    flex-grow: 1;
+    border: none;
+    outline: none;
+    background-color: #FFFFFF10;
+    color: white;
+    font-size: 1em;
+    padding: 0.5em 1em;
+    vertical-align: center;
+    height: 1.2em;
 }
 
 .transferButton{
