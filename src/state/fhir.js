@@ -8,8 +8,8 @@ const useFHIR = () => {
   const [launch, setLaunch] = useLocalStorage("launch", null);
   const [metadata, setMetadata] = useLocalStorage("metadata", null);
   const [accessToken, setAccessToken] = useLocalStorage("accessToken", null);
-  const [patient, setPatient] = useState(null);
-  const [episodeOfCare, setEpisodeOfCare] = useState(null);
+  const [patient, setPatient] = useLocalStorage("patient", null);
+  const [episodeOfCare, setEpisodeOfCare] = useLocalStorage("episodeOfCare", null);
 
   const searchResources = async (resourceType = "", params = {}, sort = []) => {
     const qs = queryString.stringify({ ...params, _sort: sort.join() });
@@ -83,7 +83,7 @@ const useFHIR = () => {
   const updateResource = async (path = "", data = {}) => {
     const result = new Promise(function (resolve, reject) {
       fetch(`${iss}/${path}`, {
-        method: "POST",
+        method: "PUT",
         headers: {
           "Content-Type": "application/fhir+json",
           Authorization: `Bearer ${accessToken}`,

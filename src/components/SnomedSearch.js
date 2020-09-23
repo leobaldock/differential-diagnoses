@@ -112,8 +112,6 @@ export default class SnomedSearch extends React.Component {
                         }
                     }}
                     onChange={async (inputValue, data) => {
-                        console.log(inputValue);
-                        console.log(data);
                         await this.setState({snomedValue: {code: inputValue.value, display: inputValue.label}});
                         this.props.callback({code: inputValue.value, display: inputValue.label});
                     }}

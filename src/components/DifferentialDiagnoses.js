@@ -165,35 +165,38 @@ class DifferentialDiagnosis extends React.Component {
     }
   }
 
-  saveToFHIR() {
+  async saveToFHIR() {
     const { FHIR } = this.props;
-    console.log(FHIR)
-    const diagnosis = this.state.listA.map((e, index) => {
-      /* Create a condition for each item in the list */
-      const resource = FHIR.createResource("Condition", {
-        resourceType: "Condition",
-        subject: { reference: FHIR.makeRef(FHIR.patient) },
-        code: {
-          system: "http://snomed.info/sct/",
-          code: e.code,
-          display: e.display,
-        },
-      });
+    const diagnosis = await Promise.all(
+      this.state.listA.map(async (e, index) => {
+        /* Create a condition for each item in the list */
+        const resource = await FHIR.createResource("Condition", {
+          resourceType: "Condition",
+          subject: { reference: FHIR.makeRef(FHIR.patient) },
+          code: {
+            system: "http://snomed.info/sct/",
+            code: e.code,
+            display: e.display,
+          },
+        });
 
-      return {
-        condition: FHIR.makeRef(resource),
-        role: { text: "Likely" },
-        rank: index + 1,
-      };
-    });
+        return {
+          condition: { reference: FHIR.makeRef(resource) },
+          role: { text: "Likely" },
+          rank: index + 1,
+        };
+      })
+    );
 
-    FHIR.updateResource(`EpisodeOfCare/${FHIR.episodeOfCare.id}`, {
+    const episodeOfCare = await FHIR.updateResource(`EpisodeOfCare/${FHIR.episodeOfCare.id}`, {
       resourceType: "EpisodeOfCare",
       id: FHIR.episodeOfCare.id,
       status: "active",
       patient: { reference: FHIR.makeRef(FHIR.patient) },
-    //   diagnosis,
+      diagnosis,
     });
+
+    console.log(episodeOfCare)
   }
 
   render() {
@@ -207,29 +210,37 @@ class DifferentialDiagnosis extends React.Component {
     ];
 
     return (
-      <div style={{ height: "100vh", display: "flex", flexDirection: "column" }}>
-
+      <div
+        style={{ height: "100vh", display: "flex", flexDirection: "column" }}
+      >
         <TitleBar title="Differential Diagnoses" buttons={pageTitleButtons} />
 
         <div className="listContainer">
           <DragDropContext onDragEnd={this.onDragEnd}>
-
             <List
               title={`Likely Diagnoses`}
               colour="#5DAD89"
               droppableId="droppable1"
               rows={this.state.listA}
               addRow={() => this.addRow(this.state.listA)}
-              deleteRow={index => this.setState({ deletingRow: [this.state.listA, index] })}
-              updateRowNumber={(from, to) => this.setState({ listA: this.reorder(this.state.listA, from, to) })}
-              transfer={index => this.manualMove(this.state.listA, this.state.listB, index, 0)}
+              deleteRow={(index) =>
+                this.setState({ deletingRow: [this.state.listA, index] })
+              }
+              updateRowNumber={(from, to) =>
+                this.setState({
+                  listA: this.reorder(this.state.listA, from, to),
+                })
+              }
+              transfer={(index) =>
+                this.manualMove(this.state.listA, this.state.listB, index, 0)
+              }
               setSnomed={(row, newSnomed) => {
                 row.snomed = newSnomed;
-                this.setState({listA: [...this.state.listA] });
+                this.setState({ listA: [...this.state.listA] });
               }}
               setNote={(row, newNote) => {
                 row.note = newNote;
-                this.setState({listA: [...this.state.listA] });
+                this.setState({ listA: [...this.state.listA] });
               }}
               isLeft={true}
             />
@@ -240,20 +251,27 @@ class DifferentialDiagnosis extends React.Component {
               droppableId="droppable2"
               rows={this.state.listB}
               addRow={() => this.addRow(this.state.listB)}
-              deleteRow={index => this.setState({ deletingRow: [this.state.listB, index] })}
-              updateRowNumber={(from, to) => this.setState({ listB: this.reorder(this.state.listB, from, to) })}
-              transfer={index => this.manualMove(this.state.listB, this.state.listA, index, 0)}
+              deleteRow={(index) =>
+                this.setState({ deletingRow: [this.state.listB, index] })
+              }
+              updateRowNumber={(from, to) =>
+                this.setState({
+                  listB: this.reorder(this.state.listB, from, to),
+                })
+              }
+              transfer={(index) =>
+                this.manualMove(this.state.listB, this.state.listA, index, 0)
+              }
               setSnomed={(row, newSnomed) => {
                 row.snomed = newSnomed;
-                this.setState({listB: [...this.state.listB] });
+                this.setState({ listB: [...this.state.listB] });
               }}
               setNote={(row, newNote) => {
                 row.note = newNote;
-                this.setState({listB: [...this.state.listB] });
+                this.setState({ listB: [...this.state.listB] });
               }}
               isLeft={false}
             />
-            
           </DragDropContext>
         </div>
 

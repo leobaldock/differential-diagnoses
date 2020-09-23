@@ -37,7 +37,7 @@ const Home = (props) => {
 
   /* Runs when token data changes */
   useEffect(() => {
-    if (tokenUri) {
+    if (tokenUri && !accessToken) {
       fetchAccessToken();
     }
   }, [tokenUri]);
@@ -57,6 +57,7 @@ const Home = (props) => {
   }, [patient]);
 
   const fetchAccessToken = () => {
+    console.log("Fetching new access token...")
     fetch(tokenUri, {
       method: "POST",
       headers: {
@@ -94,8 +95,9 @@ const Home = (props) => {
     );
 
     if (search.entry.length > 0) {
-      console.log(search.entry[0].resource);
+      console.log(search.entry[0].resource)
       setEpisodeOfCare(search.entry[0].resource);
+      return
     }
 
     const episodeOfCare = await createResource("EpisodeOfCare", {
