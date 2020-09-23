@@ -71,55 +71,57 @@ export default function List({title, colour, rows, addRow, deleteRow, updateRowN
             )}
 
             <div className="listRowContainer">
-                <Droppable droppableId={droppableId}>
-                {(provided, snapshot) => (
-                    <div
-                    {...provided.droppableProps}
-                    ref={provided.innerRef}
-                    style={getListStyle(snapshot.isDraggingOver)}
-                    >
-                        {rows.map((row, index) => (
-                            <Draggable key={row.id} draggableId={row.id.toString(10)} index={index}>   
-                                {(provided, snapshot) => (
-                                    <div
-                                        ref={provided.innerRef}
-                                        {...provided.draggableProps}
-                                        {...provided.dragHandleProps}
-                                        style={getItemStyle(
-                                            snapshot.isDragging,
-                                            provided.draggableProps.style
-                                        )}
-                                    >
-                                        <span>
-                                            <ListRow
-                                                searchCallback= {(newSnomed) => {
-                                                    console.log("--search callback--");
-                                                    row.snomed = newSnomed;
+                <div>
+                    <Droppable droppableId={droppableId}>
+                    {(provided, snapshot) => (
+                        <div
+                        {...provided.droppableProps}
+                        ref={provided.innerRef}
+                        style={getListStyle(snapshot.isDraggingOver)}
+                        >
+                            {rows.map((row, index) => (
+                                <Draggable key={row.id} draggableId={row.id.toString(10)} index={index}>   
+                                    {(provided, snapshot) => (
+                                        <div
+                                            ref={provided.innerRef}
+                                            {...provided.draggableProps}
+                                            {...provided.dragHandleProps}
+                                            style={getItemStyle(
+                                                snapshot.isDragging,
+                                                provided.draggableProps.style
+                                            )}
+                                        >
+                                            <span>
+                                                <ListRow
+                                                    searchCallback= {(newSnomed) => {
+                                                        console.log("--search callback--");
+                                                        row.snomed = newSnomed;
+                                                        }
                                                     }
-                                                }
-                                                content={row.snomed}
-                                                note={row.note}
-                                                rowNumber={index + 1}
-                                                listColour={listColour}
-                                                deleteRow={deleteRow}
-                                                updateRowNumber={updateRowNumber}
-                                                transfer={transfer}
-                                                showNotes={showNotes}
-                                                isLeft= {isLeft}
-                                            />
-                                        </span>
-                                    </div>
-                                )}
-                            </Draggable>
-                            ))}
-                            {provided.placeholder}
-                        </div>
-                    )}
-                </Droppable>
-
-                
-                <div className="addRowButton">
+                                                    content={row.snomed}
+                                                    note={row.note}
+                                                    rowNumber={index + 1}
+                                                    listColour={listColour}
+                                                    deleteRow={deleteRow}
+                                                    updateRowNumber={updateRowNumber}
+                                                    transfer={transfer}
+                                                    showNotes={showNotes}
+                                                    isLeft= {isLeft}
+                                                />
+                                            </span>
+                                        </div>
+                                    )}
+                                </Draggable>
+                                ))}
+                                {provided.placeholder}
+                            </div>
+                        )}
+                    </Droppable>
+                </div>
+                <div className="addRowButton" style={{background: listColour}}>
+                    <div className="overlay">
                         <span onClick={addRow}> + ADD NEW DIAGNOSIS </span>
+                    </div>
                 </div>      
             </div>
         </div>

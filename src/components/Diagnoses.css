@@ -28,7 +28,6 @@
     flex-basis: 0px;
     display: flex;
     flex-direction: column;
-    max-height: 80vh;
 }
 
 .listRowContainer{
@@ -37,8 +36,12 @@
     justify-content: space-between;
     flex-direction: column;
     font-size: 1.25em;
-    max-height: 80vh;
+    position: relative;
+}
+
+.listRowContainer div:first-of-type{
     overflow-y: scroll;
+    max-height: 58vh;
 }
 
 .listRow{
@@ -79,8 +82,22 @@
 
 .addRowButton{
     color: #ffffffA9;
-    padding: 0.5em;
     text-align: right;
+    position: absolute;
+    bottom: 0px;
+    right: 0px;
+    z-index: 1;
+    width: calc(100%);
+}
+
+.overlay{
+    background: rgba(201,201,201,0.2);
+    position: relative;
+    bottom: 0px;
+    right: 0px;
+    padding: 0.5em;
+    z-index: 2;
+    width: calc(100%-1em);
 }
 
 .addRowButton:hover{
