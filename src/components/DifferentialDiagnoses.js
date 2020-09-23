@@ -179,12 +179,13 @@ class DifferentialDiagnosis extends React.Component {
     ];
 
     return (
-      <div
-        style={{ height: "100vh", display: "flex", flexDirection: "column"}}
-      >
+      <div style={{ height: "100vh", display: "flex", flexDirection: "column" }}>
+
         <TitleBar title="Differential Diagnoses" buttons={pageTitleButtons} />
+
         <div className="listContainer">
           <DragDropContext onDragEnd={this.onDragEnd}>
+
             <List
               title={`Likely Diagnoses`}
               colour="#5DAD89"
@@ -204,6 +205,7 @@ class DifferentialDiagnosis extends React.Component {
               }}
               isLeft={true}
             />
+
             <List
               title={`Critical`}
               colour="#DA7676"
@@ -223,6 +225,7 @@ class DifferentialDiagnosis extends React.Component {
               }}
               isLeft={false}
             />
+            
           </DragDropContext>
         </div>
 

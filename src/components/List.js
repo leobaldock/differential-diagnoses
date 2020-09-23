@@ -70,7 +70,7 @@ export default function List({title, colour, rows, addRow, deleteRow, updateRowN
                         <div
                         {...provided.droppableProps}
                         ref={provided.innerRef}
-                        style={getListStyle(snapshot.isDraggingOver)}
+                        style={getListStyle()}
                         >
                             {rows.map((row, index) => (
                                 <Draggable key={row.id} draggableId={row.id.toString(10)} index={index}>   
@@ -79,10 +79,7 @@ export default function List({title, colour, rows, addRow, deleteRow, updateRowN
                                             ref={provided.innerRef}
                                             {...provided.draggableProps}
                                             {...provided.dragHandleProps}
-                                            style={getItemStyle(
-                                                snapshot.isDragging,
-                                                provided.draggableProps.style
-                                            )}
+                                            style={getItemStyle(provided.draggableProps.style)}
                                         >
                                             <span>
                                                 <ListRow
