@@ -180,7 +180,7 @@ class DifferentialDiagnosis extends React.Component {
 
     return (
       <div
-        style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}
+        style={{ height: "100vh", display: "flex", flexDirection: "column"}}
       >
         <TitleBar title="Differential Diagnoses" buttons={pageTitleButtons} />
         <div className="listContainer">

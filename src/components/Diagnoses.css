@@ -28,6 +28,8 @@
     flex-basis: 0px;
     display: flex;
     flex-direction: column;
+    max-height: 78vh;
+    position: relative;
 }
 
 .listRowContainer{
@@ -36,13 +38,8 @@
     justify-content: space-between;
     flex-direction: column;
     font-size: 1.25em;
-    position: relative;
-}
-
-.listRowScroll{
-    overflow-y: scroll;
-    scrollbar-width: none;
-    height: 58vh;
+    padding-bottom: 50px;
+    overflow: auto;
 }
 
 .listRow{
