@@ -41,7 +41,8 @@
 
 .listRowScroll{
     overflow-y: scroll;
-    max-height: 58vh;
+    scrollbar-width: none;
+    height: 58vh;
 }
 
 .listRow{
