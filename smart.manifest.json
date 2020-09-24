@@ -1,0 +1,14 @@
+{
+    "software_id": "differential-diagnosis",
+    "client_name": "Differential Diagnosis",
+    "client_uri": null,
+    "logo_uri": "https://differential-diagnoses.uqcloud.net/diagnosys-favicon.png",
+    "launch_url": "https://differential-diagnoses.uqcloud.net/launch",
+    "redirect_uris": ["https://differential-diagnoses.uqcloud.net/"],
+    "scope": "launch",
+    "token_endpoint_auth_method": "NONE",
+    "fhirVersions": null,
+    "briefDescription": "SMART-on-FHIR App for assistance in recording differential diagnoses of patients for student use.",
+    "samplePatients": null
+  }
+  

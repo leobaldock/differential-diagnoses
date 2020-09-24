@@ -7,6 +7,7 @@ import React, { useEffect, useState } from "react";
 import DifferentialDiagnoses from "../components/DifferentialDiagnoses";
 import FHIR from "../state/fhir";
 import { encodeFormData } from "../util/http";
+import { client_id, redirect_uri } from "../constants";
 
 const Home = (props) => {
   const {
@@ -25,7 +26,7 @@ const Home = (props) => {
     getSecurityUri,
     tokenIsValid,
   } = FHIR.useContainer();
-  const [params] = useState(queryString.parse(props.location.search))
+  const [params] = useState(queryString.parse(props.location.search));
   const [contextData, setContextData] = useState(null);
 
   /* Runs when iss or launch data changes */
@@ -61,8 +62,8 @@ const Home = (props) => {
       body: encodeFormData({
         grant_type: "authorization_code",
         code: params.code,
-        redirect_uri: "http://localhost:3000",
-        client_id: "e1b839fa-ee6c-4c18-b792-0f7a88e86359",
+        redirect_uri,
+        client_id,
       }),
     })
       .then((res) => res.json())
