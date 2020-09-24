@@ -1,6 +1,6 @@
 ## Running the Application from Logica Sandbox
 ### Login
-To run the differential diagnosis app in the test sandbox, go to [sandbox.logicahealth.org] and login with the following credentials:
+To run the differential diagnosis app in the test sandbox, go to [sandbox.logicahealth.org](https://sandbox.logicahealth.org) and login with the following credentials:
 ```
 Username: thundercats
 Password: comp3000
