@@ -11,6 +11,7 @@ import { encodeFormData } from "../util/http";
 const Home = (props) => {
   const {
     iss,
+    launch,
     metadata,
     accessToken,
     setAccessToken,
@@ -22,43 +23,38 @@ const Home = (props) => {
     createResource,
     makeRef,
     getSecurityUri,
+    tokenIsValid,
   } = FHIR.useContainer();
-  const [tokenUri, setTokenUri] = useState(null);
   const [contextData, setContextData] = useState(null);
 
   const params = queryString.parse(props.location.search);
 
-  /* Runs when metadata changes */
+  /* Runs when iss or launch data changes */
   useEffect(() => {
-    if (metadata) {
-      setTokenUri(getSecurityUri("token"));
-    }
-  }, [metadata]);
-
-  /* Runs when token data changes */
-  useEffect(() => {
-    if (tokenUri && !accessToken) {
+    if (iss && launch) {
       fetchAccessToken();
     }
-  }, [tokenUri]);
+  }, [launch, iss]);
 
   /* Runs when access token changes */
   useEffect(() => {
-    if (accessToken && contextData) {
+    // console.log(contextData)
+    if (tokenIsValid() && contextData) {
       fetchPatient(contextData.patient);
     }
   }, [accessToken, contextData]);
 
   /* Runs when patient resource changes */
   useEffect(() => {
-    if (patient) {
+    // console.log(patient)
+    if (tokenIsValid() && patient) {
       fetchCreateEpisodeOfCare();
     }
   }, [patient]);
 
   const fetchAccessToken = () => {
-    console.log("Fetching new access token...")
-    fetch(tokenUri, {
+    console.log(`Fetching new access token...`);
+    fetch(getSecurityUri("token"), {
       method: "POST",
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",
@@ -72,8 +68,12 @@ const Home = (props) => {
     })
       .then((res) => res.json())
       .then((data) => {
+        // console.log(data)
         setContextData({ patient: data.patient });
-        setAccessToken(data.access_token);
+        setAccessToken({
+          token: data.access_token,
+          expiry: Date.now() + data.expires_in * 1000,
+        });
       })
       .catch((error) => console.log(error));
   };
@@ -86,18 +86,18 @@ const Home = (props) => {
    * Search for an EpisodeOfCare resource for this patient and create one if none exists.
    */
   const fetchCreateEpisodeOfCare = async () => {
+    // console.log(patient);
     let search = await searchResources(
       "EpisodeOfCare",
       {
-        patient: `${iss}/Patient/${patient.id}`,
+        patient: makeRef(patient),
       },
-      ["-date"] // TODO: Check this is working
+      ["-_lastUpdated"] // TODO: Check this is working
     );
 
-    if (search.entry.length > 0) {
-      console.log(search.entry[0].resource)
+    if (search.entry && search.entry.length > 0) {
       setEpisodeOfCare(search.entry[0].resource);
-      return
+      return;
     }
 
     const episodeOfCare = await createResource("EpisodeOfCare", {

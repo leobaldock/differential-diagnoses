@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect } from "react";
 import { createContainer } from "unstated-next";
 import queryString from "query-string";
 import useLocalStorage from "../hooks/useLocalStorage";
@@ -15,7 +15,7 @@ const useFHIR = () => {
     const qs = queryString.stringify({ ...params, _sort: sort.join() });
     const result = new Promise(function (resolve, reject) {
       fetch(`${iss}/${resourceType}?${qs}`, {
-        headers: { Authorization: `Bearer ${accessToken}` },
+        headers: { Authorization: `Bearer ${accessToken.token}` },
       })
         .then((res) => {
           resolve(res.json());
@@ -36,7 +36,7 @@ const useFHIR = () => {
   const getResource = async (path = "") => {
     const result = new Promise(function (resolve, reject) {
       fetch(`${iss}/${path}`, {
-        headers: { Authorization: `Bearer ${accessToken}` },
+        headers: { Authorization: `Bearer ${accessToken.token}` },
       })
         .then((res) => {
           resolve(res.json());
@@ -60,7 +60,7 @@ const useFHIR = () => {
         method: "POST",
         headers: {
           "Content-Type": "application/fhir+json",
-          Authorization: `Bearer ${accessToken}`,
+          Authorization: `Bearer ${accessToken.token}`,
         },
         body: JSON.stringify(data),
       })
@@ -86,7 +86,7 @@ const useFHIR = () => {
         method: "PUT",
         headers: {
           "Content-Type": "application/fhir+json",
-          Authorization: `Bearer ${accessToken}`,
+          Authorization: `Bearer ${accessToken.token}`,
         },
         body: JSON.stringify(data),
       })
@@ -125,6 +125,13 @@ const useFHIR = () => {
     ).valueUri;
   };
 
+  /**
+   * Check if the current access token is valid.
+   */
+  const tokenIsValid = () => {
+    return accessToken && accessToken.expiry > Date.now()
+  }
+
   return {
     iss,
     setIss,
@@ -144,6 +151,7 @@ const useFHIR = () => {
     updateResource,
     makeRef,
     getSecurityUri,
+    tokenIsValid
   };
 };
 

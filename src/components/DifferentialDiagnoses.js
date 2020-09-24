@@ -45,6 +45,44 @@ class DifferentialDiagnosis extends React.Component {
     this.saveToFHIR = this.saveToFHIR.bind(this);
   }
 
+  componentDidUpdate(prevProps) {
+    const { FHIR } = this.props;
+    const { episodeOfCare } = FHIR;
+    if (
+      episodeOfCare !== prevProps.FHIR.episodeOfCare &&
+      episodeOfCare.diagnosis
+    ) {
+      /* The episodeOfCare was updated and contains diagnoses, load the lists with these diagnoses */
+      let newListA = [];
+      let newListB = [];
+
+      /* To reduce queries, find all the conditions for this patient and then we will filter them */
+
+      this.props.FHIR.searchResources("Condition", {
+        patient: FHIR.makeRef(FHIR.patient),
+      }).then((result) => {
+        episodeOfCare.diagnosis.forEach((e, index) => {
+          /* Find the condition in the patient's list of conditions */
+          const condition = result.entry.find(
+            (c) => c.fullUrl === `${FHIR.iss}/${e.condition.reference}`
+          ).resource;
+
+          let list = e.role.text == "Likely" ? newListA : newListB;
+          list.splice(e.rank, 0, {
+            id: index,
+            note: "",
+            snomed: {
+              code: condition.code.coding[0].code,
+              display: condition.code.coding[0].display,
+            },
+          });
+        });
+
+        this.setState({ listA: newListA, listB: newListB });
+      });
+    }
+  }
+
   addRow(list) {
     list.push({
       id: new Date().getTime(),
@@ -167,36 +205,60 @@ class DifferentialDiagnosis extends React.Component {
 
   async saveToFHIR() {
     const { FHIR } = this.props;
-    const diagnosis = await Promise.all(
-      this.state.listA.map(async (e, index) => {
+
+    const likelyDiagnoses = await this.createDiagnosisList(
+      this.state.listA,
+      "Likely"
+    );
+
+    const criticalDiagnoses = await this.createDiagnosisList(
+      this.state.listB,
+      "Critical"
+    );
+
+    const diagnosis = likelyDiagnoses.concat(criticalDiagnoses);
+
+    const episodeOfCare = await FHIR.updateResource(
+      `EpisodeOfCare/${FHIR.episodeOfCare.id}`,
+      {
+        resourceType: "EpisodeOfCare",
+        id: FHIR.episodeOfCare.id,
+        status: "active",
+        patient: { reference: FHIR.makeRef(FHIR.patient) },
+        diagnosis,
+      }
+    );
+
+    FHIR.setEpisodeOfCare(episodeOfCare);
+  }
+
+  async createDiagnosisList(list, role) {
+    const { FHIR } = this.props;
+    return await Promise.all(
+      list.map(async (e, index) => {
         /* Create a condition for each item in the list */
         const resource = await FHIR.createResource("Condition", {
           resourceType: "Condition",
           subject: { reference: FHIR.makeRef(FHIR.patient) },
           code: {
-            system: "http://snomed.info/sct/",
-            code: e.code,
-            display: e.display,
+            coding: [
+              {
+                system: "http://snomed.info/sct",
+                code: e.snomed.code,
+                display: e.snomed.display,
+              },
+            ],
+            text: e.snomed.display,
           },
         });
 
         return {
           condition: { reference: FHIR.makeRef(resource) },
-          role: { text: "Likely" },
+          role: { text: role },
           rank: index + 1,
         };
       })
     );
-
-    const episodeOfCare = await FHIR.updateResource(`EpisodeOfCare/${FHIR.episodeOfCare.id}`, {
-      resourceType: "EpisodeOfCare",
-      id: FHIR.episodeOfCare.id,
-      status: "active",
-      patient: { reference: FHIR.makeRef(FHIR.patient) },
-      diagnosis,
-    });
-
-    console.log(episodeOfCare)
   }
 
   render() {

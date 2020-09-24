@@ -33,7 +33,7 @@ const Launch = (props) => {
     fetchMetadata();
   }, [iss]);
 
-  /* Runs when the metadata changes */
+  /* Runs when the metadata or launch changes */
   useEffect(() => {
     if (metadata && launch) {
       redirectToAuth();
