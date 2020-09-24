@@ -25,35 +25,34 @@ const Home = (props) => {
     getSecurityUri,
     tokenIsValid,
   } = FHIR.useContainer();
+  const [params] = useState(queryString.parse(props.location.search))
   const [contextData, setContextData] = useState(null);
-
-  const params = queryString.parse(props.location.search);
 
   /* Runs when iss or launch data changes */
   useEffect(() => {
-    if (iss && launch) {
+    if (iss && params.code) {
       fetchAccessToken();
     }
-  }, [launch, iss]);
+  }, [params, iss]);
 
   /* Runs when access token changes */
   useEffect(() => {
-    // console.log(contextData)
-    if (tokenIsValid() && contextData) {
+    console.log(contextData);
+    if (tokenIsValid() && contextData != null) {
       fetchPatient(contextData.patient);
     }
   }, [accessToken, contextData]);
 
   /* Runs when patient resource changes */
   useEffect(() => {
-    // console.log(patient)
+    console.log(patient);
     if (tokenIsValid() && patient) {
       fetchCreateEpisodeOfCare();
     }
   }, [patient]);
 
   const fetchAccessToken = () => {
-    console.log(`Fetching new access token...`);
+    console.log(`Fetching new access token with code ${params.code}...`);
     fetch(getSecurityUri("token"), {
       method: "POST",
       headers: {
@@ -68,7 +67,7 @@ const Home = (props) => {
     })
       .then((res) => res.json())
       .then((data) => {
-        // console.log(data)
+        console.log(data);
         setContextData({ patient: data.patient });
         setAccessToken({
           token: data.access_token,
@@ -79,6 +78,7 @@ const Home = (props) => {
   };
 
   const fetchPatient = async (patientId) => {
+    if (!patientId) return;
     getResource(`Patient/${patientId}`).then((res) => setPatient(res));
   };
 
@@ -86,7 +86,7 @@ const Home = (props) => {
    * Search for an EpisodeOfCare resource for this patient and create one if none exists.
    */
   const fetchCreateEpisodeOfCare = async () => {
-    // console.log(patient);
+    console.log(patient);
     let search = await searchResources(
       "EpisodeOfCare",
       {

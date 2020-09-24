@@ -1,15 +1,15 @@
-import React, { useEffect } from "react";
+import React, { useState } from "react";
 import { createContainer } from "unstated-next";
 import queryString from "query-string";
 import useLocalStorage from "../hooks/useLocalStorage";
 
 const useFHIR = () => {
   const [iss, setIss] = useLocalStorage("iss", null);
-  const [launch, setLaunch] = useLocalStorage("launch", null);
+  const [launch, setLaunch] = useState(null);
   const [metadata, setMetadata] = useLocalStorage("metadata", null);
   const [accessToken, setAccessToken] = useLocalStorage("accessToken", null);
-  const [patient, setPatient] = useLocalStorage("patient", null);
-  const [episodeOfCare, setEpisodeOfCare] = useLocalStorage("episodeOfCare", null);
+  const [patient, setPatient] = useState(null);
+  const [episodeOfCare, setEpisodeOfCare] = useState(null);
 
   const searchResources = async (resourceType = "", params = {}, sort = []) => {
     const qs = queryString.stringify({ ...params, _sort: sort.join() });
