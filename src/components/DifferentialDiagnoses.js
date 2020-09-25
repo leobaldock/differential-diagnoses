@@ -28,7 +28,7 @@ class DifferentialDiagnosis extends React.Component {
       ],
       listB: [],
       deletingRow: null, // [list, index]
-      loading: true,
+      loading: false,
     };
 
     this.id2List = {
@@ -54,12 +54,14 @@ class DifferentialDiagnosis extends React.Component {
       episodeOfCare !== prevProps.FHIR.episodeOfCare &&
       episodeOfCare.diagnosis
     ) {
+      /* Show loader */
+      this.setState({ loading: true });
+
       /* The episodeOfCare was updated and contains diagnoses, load the lists with these diagnoses */
       let newListA = [];
       let newListB = [];
 
       /* To reduce queries, find all the conditions for this patient and then we will filter them */
-
       this.props.FHIR.searchResources("Condition", {
         patient: FHIR.makeRef(FHIR.patient),
       }).then((result) => {
@@ -80,7 +82,7 @@ class DifferentialDiagnosis extends React.Component {
           });
         });
 
-        this.setState({ listA: newListA, listB: newListB });
+        this.setState({ listA: newListA, listB: newListB, loading: false });
       });
     }
   }
@@ -264,7 +266,11 @@ class DifferentialDiagnosis extends React.Component {
   }
 
   renderLoading() {
-    return <CircleLoader size={100} />;
+    return (
+      <div className="loading">
+        <CircleLoader size={100} />
+      </div>
+    );
   }
 
   render() {
