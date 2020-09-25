@@ -20,4 +20,3 @@ When you load a patient who already has some diagnoses saved on the FHIR server,
 
 # Deployment
 To deploy, simply merge master into this branch and push. The server will automatically pull down the code, create a production build and host it at https://diagnosys.uqcloud.net/
-
