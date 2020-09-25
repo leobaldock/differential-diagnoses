@@ -139,7 +139,7 @@
 
 
 /* TitleBar Styling */
-.titleBar{
+.titleBar {
     display: flex;
     flex-direction: row;
     align-items: center;
@@ -147,7 +147,12 @@
     padding: 1em;
     background-color: #00000060;
     color: white;
-  }
+}
+
+.titleBar h1 {
+    margin: 0.25em;
+    font-size: 1.75em;
+}
 
 .buttonContainer > *{
     margin: 0 0.5em;
