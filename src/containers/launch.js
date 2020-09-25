@@ -16,8 +16,6 @@ const Launch = (props) => {
   const {
     iss,
     setIss,
-    launch,
-    setLaunch,
     metadata,
     setMetadata,
     getSecurityUri,
@@ -26,7 +24,6 @@ const Launch = (props) => {
   /* Runs when the query params change */
   useEffect(() => {
     setIss(params.iss);
-    setLaunch(params.launch);
   }, [params]);
 
   /* Runs when the application launches */
@@ -34,12 +31,12 @@ const Launch = (props) => {
     fetchMetadata();
   }, [iss]);
 
-  /* Runs when the metadata changes */
+  /* Runs when the metadata or launch changes */
   useEffect(() => {
-    if (metadata && launch) {
+    if (metadata) {
       redirectToAuth();
     }
-  }, [metadata, launch]);
+  }, [metadata]);
 
   const fetchMetadata = () => {
     fetch(`${iss}/metadata/`)
@@ -50,6 +47,7 @@ const Launch = (props) => {
   };
 
   const redirectToAuth = () => {
+    console.log(params.launch);
     const authUri = getSecurityUri("authorize");
 
     /* TODO: don't hardcode this stuff */
@@ -61,9 +59,10 @@ const Launch = (props) => {
       scope: "launch",
       state: "test",
       aud: iss,
-      launch: launch,
+      launch: params.launch,
     });
 
+    console.log("Going to auth");
     history.push(`/authorize?${qs}`);
   };
 

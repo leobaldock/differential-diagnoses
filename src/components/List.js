@@ -1,6 +1,10 @@
 import React, {useState, useEffect} from "react";
 import TitleBar from "./TitleBar"
 import {FontAwesomeIcon} from '@fortawesome/react-fontawesome'
+import { Droppable, Draggable } from "react-beautiful-dnd";
+import { SliderPicker } from "react-color";
+import SnomedSearch from './SnomedSearch';
+import TextareaAutosize from 'react-textarea-autosize';
 import {
     faBars,
     faMinusCircle,
@@ -8,49 +12,33 @@ import {
     faAngleDoubleLeft,
     faPalette,
     faComment,
-    faCommentMedical
+    faCommentMedical, faBorderNone
 } from '@fortawesome/free-solid-svg-icons'
-import { Droppable, Draggable } from "react-beautiful-dnd";
-import { SliderPicker } from "react-color";
-import SnomedSearch from './SnomedSearch'; 
 
 
-export default function List({title, colour, rows, addRow, deleteRow, updateRowNumber, droppableId, transfer, showNotes, isLeft}){
+export default function List({title, colour, rows, addRow, deleteRow, updateRowNumber, droppableId, transfer, isLeft, setSnomed, setNote}){
     const [paletteVisibility, setPaletteVisibility] = useState(false);
     const [listColour, setListColour] = useState(colour);
-    
-    const listButtons = [
-        <FontAwesomeIcon
-        icon={faPalette}
-        size="3x"
-        style={{cursor: "pointer"}}
-        onClick={() => setPaletteVisibility(!paletteVisibility)}
-    />
-    ]
 
-    const getListStyle = isDraggingOver => ({
-        //background: isDraggingOver ? "00000040" : "transparent",
+    const getListStyle = () => ({
         padding: "0.5em",
       });
 
-    const getItemStyle = (isDragging, draggableStyle) => ({
+    const getItemStyle = draggableStyle => ({
         userSelect: "none",
         padding: "0.5em",
-        //background: isDragging ? "#00000010" : "transparent",
-        
-        //styles we need to apply on draggables
+        outline: "none",
         ...draggableStyle
     });
 
-    const testStyles = {
-        default: {
-            hue: {
-                height: '10px',
-                width: '90%',
-                margin: 'auto',
-            },
-        },
-      }
+    const listButtons = [
+        <FontAwesomeIcon
+            icon={faPalette}
+            size="3x"
+            style={{cursor: "pointer"}}
+            onClick={() => setPaletteVisibility(!paletteVisibility)}
+        />
+    ];
 
     return (
         <div className="list" style={{backgroundColor: listColour, color: listColour}}>
@@ -60,66 +48,66 @@ export default function List({title, colour, rows, addRow, deleteRow, updateRowN
             (
                 <div style={{background: "#00000060"}}>
                 <SliderPicker
-                    styles = {testStyles}
                     color = {listColour}
-                    onChange={(e) => {
-                        setListColour(e.hex);
-                        //setPaletteVisibility(false);
+                    onChange={(e) => setListColour(e.hex)}
+                    styles = {{
+                        default: {
+                            hue: {
+                                height: '10px',
+                                width: '90%',
+                                margin: 'auto',
+                            },
+                        }
                     }}
                 />
               </div>
             )}
 
             <div className="listRowContainer">
-                <Droppable droppableId={droppableId}>
-                {(provided, snapshot) => (
-                    <div
-                    {...provided.droppableProps}
-                    ref={provided.innerRef}
-                    style={getListStyle(snapshot.isDraggingOver)}
-                    >
-                        {rows.map((row, index) => (
-                            <Draggable key={row.id} draggableId={row.id.toString(10)} index={index}>   
-                                {(provided, snapshot) => (
-                                    <div
-                                        ref={provided.innerRef}
-                                        {...provided.draggableProps}
-                                        {...provided.dragHandleProps}
-                                        style={getItemStyle(
-                                            snapshot.isDragging,
-                                            provided.draggableProps.style
-                                        )}
-                                    >
-                                        <span>
-                                            <ListRow
-                                                searchCallback= {(newSnomed) => {
-                                                    console.log("--search callback--");
-                                                    row.snomed = newSnomed;
-                                                    }
-                                                }
-                                                content={row.snomed}
-                                                note={row.note}
-                                                rowNumber={index + 1}
-                                                listColour={listColour}
-                                                deleteRow={deleteRow}
-                                                updateRowNumber={updateRowNumber}
-                                                transfer={transfer}
-                                                showNotes={showNotes}
-                                                isLeft= {isLeft}
-                                            />
-                                        </span>
-                                    </div>
-                                )}
-                            </Draggable>
-                            ))}
-                            {provided.placeholder}
-                        </div>
-                    )}
-                </Droppable>
-
-                
-                <div className="addRowButton">
+                <div className="listRowScroll">
+                    <Droppable droppableId={droppableId}>
+                    {(provided, snapshot) => (
+                        <div
+                        {...provided.droppableProps}
+                        ref={provided.innerRef}
+                        style={getListStyle()}
+                        >
+                            {rows.map((row, index) => (
+                                <Draggable key={row.id} draggableId={row.id.toString(10)} index={index}>   
+                                    {(provided, snapshot) => (
+                                        <div
+                                            ref={provided.innerRef}
+                                            {...provided.draggableProps}
+                                            {...provided.dragHandleProps}
+                                            style={getItemStyle(provided.draggableProps.style)}
+                                        >
+                                            <span>
+                                                <ListRow
+                                                    setSnomed={newSnomed => setSnomed(row, newSnomed)}
+                                                    setNote={newNote => setNote(row, newNote)}
+                                                    content={row.snomed}
+                                                    note={row.note}
+                                                    rowNumber={index + 1}
+                                                    listColour={listColour}
+                                                    deleteRow={deleteRow}
+                                                    updateRowNumber={updateRowNumber}
+                                                    transfer={transfer}
+                                                    isLeft= {isLeft}
+                                                />
+                                            </span>
+                                        </div>
+                                    )}
+                                </Draggable>
+                                ))}
+                                {provided.placeholder}
+                            </div>
+                        )}
+                    </Droppable>
+                </div>
+                <div className="addRowButton" style={{background: listColour}}>
+                    <div className="overlay">
                         <span onClick={addRow}> + ADD NEW DIAGNOSIS </span>
+                    </div>
                 </div>      
             </div>
         </div>
@@ -127,11 +115,10 @@ export default function List({title, colour, rows, addRow, deleteRow, updateRowN
 }
 
 
-function ListRow({listColour, note, content, rowNumber, deleteRow, updateRowNumber, transfer, showNotes, isLeft, searchCallback}) {
+function ListRow({listColour, note, content, rowNumber, deleteRow, updateRowNumber, transfer, setNote, isLeft, setSnomed}) {
 
     const [inputNum, setInputNum] = useState(rowNumber);
     const [commentColour, setCommentColour] = useState("grey");
-    const [chevronColour, setChevronColour] = useState("grey");
     const [deleteColour, setDeleteColour] = useState("grey");
     const [isNotesOpen, setNotesOpen] = useState(false);
 
@@ -156,13 +143,19 @@ function ListRow({listColour, note, content, rowNumber, deleteRow, updateRowNumb
             }
 
             <div className="listNumber">
-                <input style={{color: "white", background: "#00000060"}} value={inputNum} onChange={(e) => setInputNum(e.target.value)} onKeyDown={handleKeyDown} onBlur={handleBlur} type="text"/>
+                <input
+                    style={{color: "white", background: "#00000060"}}
+                    value={inputNum} onChange={(e) => setInputNum(e.target.value.replace(/[^0-9\.]+/g, ''))}
+                    onKeyDown={handleKeyDown}
+                    onBlur={handleBlur}
+                    type="text"
+                />
             </div>
             <div style={{flexGrow: 1, display: "flex", flexDirection: "column"}}>
                 <div className="listEntry">
                     <FontAwesomeIcon style={{cursor: "grab"}} icon={faBars}/>
                     <span style={{flexGrow: 1, marginLeft: "1em", marginRight: "1em"}}>
-                        <SnomedSearch content={content} callback={searchCallback} listColour={listColour} />
+                        <SnomedSearch content={content} callback={setSnomed} listColour={listColour} />
                     </span>
                     <div>
                         <FontAwesomeIcon
@@ -171,6 +164,8 @@ function ListRow({listColour, note, content, rowNumber, deleteRow, updateRowNumb
                                 color={commentColour}
                                 icon={note ? faComment : faCommentMedical}
                                 onClick={() => setNotesOpen(!isNotesOpen)}
+                                onMouseEnter={() => setCommentColour(listColour)}
+                                onMouseLeave={() => setCommentColour("grey")}
                             />
                         <FontAwesomeIcon
                             onClick={() => deleteRow(rowNumber - 1)}
@@ -182,16 +177,8 @@ function ListRow({listColour, note, content, rowNumber, deleteRow, updateRowNumb
                         />
                     </div>
                 </div>
-                {isNotesOpen && <div className="listEntry" style={{backgroundColor: "#00000040", color: "white"}}>
-                    <div style={{flexGrow: 1}}>{note}</div>
-                    <FontAwesomeIcon
-                        onClick={() => showNotes(rowNumber - 1)} 
-                        style={{cursor: "pointer", marginRight: "0.5em"}}
-                        color={commentColour}
-                        icon={faComment}
-                        onMouseEnter={() => setCommentColour(listColour)}
-                        onMouseLeave={() => setCommentColour("grey")}
-                    />
+                {isNotesOpen && <div className="note">
+                    <TextareaAutosize onChange={e => setNote(e.target.value)} value={note} />
                 </div>}
             </div>
             {isLeft &&

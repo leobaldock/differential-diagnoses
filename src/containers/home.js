@@ -7,56 +7,54 @@ import React, { useEffect, useState } from "react";
 import DifferentialDiagnoses from "../components/DifferentialDiagnoses";
 import FHIR from "../state/fhir";
 import { encodeFormData } from "../util/http";
+import { client_id, redirect_uri } from "../constants";
 
 const Home = (props) => {
   const {
     iss,
+    launch,
     metadata,
     accessToken,
     setAccessToken,
     patient,
     setPatient,
+    setEpisodeOfCare,
     searchResources,
     getResource,
     createResource,
     makeRef,
     getSecurityUri,
+    tokenIsValid,
   } = FHIR.useContainer();
-  const [tokenUri, setTokenUri] = useState(null);
+  const [params] = useState(queryString.parse(props.location.search));
   const [contextData, setContextData] = useState(null);
 
-  const params = queryString.parse(props.location.search);
-
-  /* Runs when metadata changes */
+  /* Runs when iss or launch data changes */
   useEffect(() => {
-    if (metadata) {
-      setTokenUri(getSecurityUri("token"));
-    }
-  }, [metadata]);
-
-  /* Runs when token data changes */
-  useEffect(() => {
-    if (tokenUri) {
+    if (iss && params.code) {
       fetchAccessToken();
     }
-  }, [tokenUri]);
+  }, [params, iss]);
 
   /* Runs when access token changes */
   useEffect(() => {
-    if (accessToken && contextData) {
+    console.log(contextData);
+    if (tokenIsValid() && contextData != null) {
       fetchPatient(contextData.patient);
     }
   }, [accessToken, contextData]);
 
   /* Runs when patient resource changes */
   useEffect(() => {
-    if (patient) {
+    console.log(patient);
+    if (tokenIsValid() && patient) {
       fetchCreateEpisodeOfCare();
     }
   }, [patient]);
 
   const fetchAccessToken = () => {
-    fetch(tokenUri, {
+    console.log(`Fetching new access token with code ${params.code}...`);
+    fetch(getSecurityUri("token"), {
       method: "POST",
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",
@@ -70,13 +68,18 @@ const Home = (props) => {
     })
       .then((res) => res.json())
       .then((data) => {
+        console.log(data);
         setContextData({ patient: data.patient });
-        setAccessToken(data.access_token);
+        setAccessToken({
+          token: data.access_token,
+          expiry: Date.now() + data.expires_in * 1000,
+        });
       })
       .catch((error) => console.log(error));
   };
 
   const fetchPatient = async (patientId) => {
+    if (!patientId) return;
     getResource(`Patient/${patientId}`).then((res) => setPatient(res));
   };
 
@@ -84,19 +87,18 @@ const Home = (props) => {
    * Search for an EpisodeOfCare resource for this patient and create one if none exists.
    */
   const fetchCreateEpisodeOfCare = async () => {
+    console.log(patient);
     let search = await searchResources(
       "EpisodeOfCare",
       {
-        patient: `${iss}/Patient/${patient.id}`,
+        patient: makeRef(patient),
       },
-      ["-date"] // TODO: Check this is working
+      ["-_lastUpdated"] // TODO: Check this is working
     );
 
-    console.log(search);
-
-    if (search.entry.length > 0) {
-      console.log(search.entry[0].resource);
-      return search.entry[0].resource;
+    if (search.entry && search.entry.length > 0) {
+      setEpisodeOfCare(search.entry[0].resource);
+      return;
     }
 
     const episodeOfCare = await createResource("EpisodeOfCare", {
@@ -105,8 +107,7 @@ const Home = (props) => {
       patient: { reference: makeRef(patient) },
     });
 
-    console.log(episodeOfCare);
-    return episodeOfCare;
+    setEpisodeOfCare(episodeOfCare);
   };
 
   return (
