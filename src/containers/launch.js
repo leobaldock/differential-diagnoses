@@ -7,6 +7,7 @@ import React, { useEffect } from "react";
 import { useLocation, useHistory } from "react-router-dom";
 import queryString from "query-string";
 import FHIR from "../state/fhir";
+import EnvService from "../util/getEnv";
 
 const Launch = (props) => {
   const location = useLocation();
@@ -55,8 +56,8 @@ const Launch = (props) => {
     const qs = queryString.stringify({
       authUri: authUri,
       response_type: "code",
-      client_id: "e1b839fa-ee6c-4c18-b792-0f7a88e86359",
-      redirect_uri: "http://localhost:3000",
+      client_id: EnvService.getClientId(),
+      redirect_uri: EnvService.getRedirectUri(),
       scope: "launch",
       state: "test",
       aud: iss,

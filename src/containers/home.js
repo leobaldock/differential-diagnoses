@@ -64,8 +64,8 @@ const Home = (props) => {
       body: encodeFormData({
         grant_type: "authorization_code",
         code: params.code,
-        redirect_uri: "http://localhost:3000",
-        client_id: "e1b839fa-ee6c-4c18-b792-0f7a88e86359",
+        client_id: EnvService.getClientId(),
+        redirect_uri: EnvService.getRedirectUri()
       }),
     })
       .then((res) => res.json())
