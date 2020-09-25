@@ -47,7 +47,6 @@ const Launch = (props) => {
   };
 
   const redirectToAuth = () => {
-    console.log(params.launch);
     const authUri = getSecurityUri("authorize");
 
     /* TODO: don't hardcode this stuff */
@@ -62,7 +61,7 @@ const Launch = (props) => {
       launch: params.launch,
     });
 
-    console.log("Going to auth");
+    console.log("Going to auth...");
     history.push(`/authorize?${qs}`);
   };
 

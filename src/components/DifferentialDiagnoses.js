@@ -4,9 +4,10 @@ import List from "./List";
 import "./Diagnoses.css";
 import Popup from "./Popup";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faSave, faEye } from "@fortawesome/free-solid-svg-icons";
+import { faSave } from "@fortawesome/free-solid-svg-icons";
 import { DragDropContext } from "react-beautiful-dnd";
 import { withFHIR } from "../state/fhir";
+import { CircleLoader } from "react-spinners";
 
 class DifferentialDiagnosis extends React.Component {
   constructor(props) {
@@ -27,6 +28,7 @@ class DifferentialDiagnosis extends React.Component {
       ],
       listB: [],
       deletingRow: null, // [list, index]
+      loading: true,
     };
 
     this.id2List = {
@@ -261,6 +263,10 @@ class DifferentialDiagnosis extends React.Component {
     );
   }
 
+  renderLoading() {
+    return <CircleLoader size={100} />;
+  }
+
   render() {
     const pageTitleButtons = [
       <FontAwesomeIcon
@@ -270,6 +276,10 @@ class DifferentialDiagnosis extends React.Component {
         onClick={this.saveToFHIR}
       />,
     ];
+
+    if (this.state.loading) {
+      return renderLoading();
+    }
 
     return (
       <div

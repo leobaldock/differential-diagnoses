@@ -93,7 +93,7 @@ const Home = (props) => {
       {
         patient: makeRef(patient),
       },
-      ["-_lastUpdated"] // TODO: Check this is working
+      ["-_lastUpdated"]
     );
 
     if (search.entry && search.entry.length > 0) {
