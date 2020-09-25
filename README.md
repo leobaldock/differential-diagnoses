@@ -17,3 +17,6 @@ You will see the possible launch scenarios listed here (just one configured for 
 You can freely change the current patient in the EHR context on the top left of the EHR window, simply click the patient's name and you will be presented with the option to select another patient.
 
 When you load a patient who already has some diagnoses saved on the FHIR server, it may take a few seconds to populate the app with these.
+
+# Deployment
+To deploy, simply merge master into this branch and push. The server will automatically pull down the code, create a production build and host it at https://diagnosys.uqcloud.net/
