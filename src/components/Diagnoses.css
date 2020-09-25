@@ -23,7 +23,7 @@
     margin-left: 0.5em;
 }
 
-.list{
+.list {
     flex-grow: 1;
     flex-basis: 0px;
     display: flex;
@@ -32,7 +32,7 @@
     position: relative;
 }
 
-.listRowContainer{
+.listRowContainer {
     flex-grow: 1;
     display: flex;
     justify-content: space-between;
@@ -42,7 +42,7 @@
     overflow: auto;
 }
 
-.listRow{
+.listRow {
     display: flex;
     align-items: stretch;
     font-size: inherit;
@@ -61,7 +61,7 @@
     border: none;
 }
 
-.listEntry{
+.listEntry {
     display: flex;
     margin: 0 1em;
     flex-grow: 1;
@@ -90,6 +90,7 @@
     padding: 0.5em 1em;
     vertical-align: center;
     height: 1.2em;
+    overflow-y: hidden;
 }
 
 .transferButton{
