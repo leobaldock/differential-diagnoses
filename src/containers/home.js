@@ -7,7 +7,7 @@ import React, { useEffect, useState } from "react";
 import DifferentialDiagnoses from "../components/DifferentialDiagnoses";
 import FHIR from "../state/fhir";
 import { encodeFormData } from "../util/http";
-import { client_id, redirect_uri } from "../constants";
+import EnvService from "../util/getEnv";
 
 const Home = (props) => {
   const {

@@ -278,7 +278,7 @@ class DifferentialDiagnosis extends React.Component {
     ];
 
     if (this.state.loading) {
-      return renderLoading();
+      return this.renderLoading();
     }
 
     return (
