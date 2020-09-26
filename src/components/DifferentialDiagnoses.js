@@ -301,9 +301,14 @@ class DifferentialDiagnosis extends React.Component {
               droppableId="droppable1"
               rows={this.state.listA}
               addRow={() => this.addRow(this.state.listA)}
-              deleteRow={(index) =>
-                this.setState({ deletingRow: [this.state.listA, index] })
-              }
+              deleteRow={(index) => {
+                console.log(this.state.listA[index]);
+                if (this.state.listA[index].snomed.code) {
+                  this.setState({ deletingRow: [this.state.listA, index] });
+                } else {
+                  this.deleteRow(this.state.listA, index);
+                }
+              }}
               updateRowNumber={(from, to) =>
                 this.setState({
                   listA: this.reorder(this.state.listA, from, to),
@@ -329,9 +334,14 @@ class DifferentialDiagnosis extends React.Component {
               droppableId="droppable2"
               rows={this.state.listB}
               addRow={() => this.addRow(this.state.listB)}
-              deleteRow={(index) =>
-                this.setState({ deletingRow: [this.state.listB, index] })
-              }
+              deleteRow={(index) => {
+                console.log(this.state.listB[index]);
+                if (this.state.listB[index].snomed.code) {
+                  this.setState({ deletingRow: [this.state.listB, index] });
+                } else {
+                  this.deleteRow(this.state.listB, index);
+                }
+              }}
               updateRowNumber={(from, to) =>
                 this.setState({
                   listB: this.reorder(this.state.listB, from, to),

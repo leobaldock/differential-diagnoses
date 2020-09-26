@@ -29,7 +29,6 @@
     flex-basis: 0px;
     display: flex;
     flex-direction: column;
-    /* max-height: 78vh; */
     position: relative;
 }
 
