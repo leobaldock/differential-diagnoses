@@ -5,6 +5,7 @@ import { Droppable, Draggable } from "react-beautiful-dnd";
 import { SliderPicker } from "react-color";
 import SnomedSearch from './SnomedSearch';
 import TextareaAutosize from 'react-textarea-autosize';
+import useLocalStorage from '../hooks/useLocalStorage';
 import {
     faBars,
     faMinusCircle,
@@ -17,7 +18,7 @@ import {
 
 
 export default function List({title, colour, showColourPalette, rows, addRow, deleteRow, updateRowNumber, droppableId, transfer, isLeft, setSnomed, setNote}){
-    const [listColour, setListColour] = useState(colour);
+    const [listColour, setListColour] = useLocalStorage(`${isLeft ? "left" : "right"}_list_colour`, colour);
     const [resetColourColour, setResetColourColour] = useState("white")
 
     const getListStyle = () => ({
