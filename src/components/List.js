@@ -21,16 +21,22 @@ export default function List({title, colour, showColourPalette, rows, addRow, de
     const [listColour, setListColour] = useLocalStorage(`${isLeft ? "left" : "right"}_list_colour`, colour);
     const [resetColourColour, setResetColourColour] = useState("white")
 
-    const getListStyle = () => ({
-        padding: "0.5em",
-      });
+    const getListStyle = (snapshot) => {
+        // console.log(snapshot);
+        return {
+            padding: "0.5em",
+        }
+    };
 
-    const getItemStyle = draggableStyle => ({
-        userSelect: "none",
-        padding: "0.5em",
-        outline: "none",
-        ...draggableStyle
-    });
+    const getItemStyle = (draggableStyle, snapshot) => {
+        // console.log(snapshot);
+        return {
+            userSelect: "none",
+            padding: "0.5em",
+            outline: "none",
+            ...draggableStyle
+        }
+    };
 
     const listButtons = [];
     if (showColourPalette && listColour !== colour) {
@@ -81,7 +87,7 @@ export default function List({title, colour, showColourPalette, rows, addRow, de
                         <div
                         {...provided.droppableProps}
                         ref={provided.innerRef}
-                        style={getListStyle()}
+                        style={getListStyle(snapshot)}
                         >
                             {rows.map((row, index) => (
                                 <Draggable key={row.id} draggableId={row.id.toString(10)} index={index}>   
@@ -90,7 +96,7 @@ export default function List({title, colour, showColourPalette, rows, addRow, de
                                             ref={provided.innerRef}
                                             {...provided.draggableProps}
                                             {...provided.dragHandleProps}
-                                            style={getItemStyle(provided.draggableProps.style)}
+                                            style={getItemStyle(provided.draggableProps.style, snapshot)}
                                         >
                                             <span>
                                                 <ListRow
@@ -103,7 +109,7 @@ export default function List({title, colour, showColourPalette, rows, addRow, de
                                                     deleteRow={deleteRow}
                                                     updateRowNumber={updateRowNumber}
                                                     transfer={transfer}
-                                                    isLeft= {isLeft}
+                                                    isLeft={snapshot.draggingOver == null ? isLeft : snapshot.draggingOver === "droppable1"}
                                                 />
                                             </span>
                                         </div>
