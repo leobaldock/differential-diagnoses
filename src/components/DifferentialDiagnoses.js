@@ -4,7 +4,7 @@ import List from "./List";
 import "./Diagnoses.css";
 import Popup from "./Popup";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faSave } from "@fortawesome/free-solid-svg-icons";
+import { faSave, faPalette } from "@fortawesome/free-solid-svg-icons";
 import { DragDropContext } from "react-beautiful-dnd";
 import { withFHIR } from "../state/fhir";
 import { CircleLoader } from "react-spinners";
@@ -29,6 +29,7 @@ class DifferentialDiagnosis extends React.Component {
       listB: [],
       deletingRow: null, // [list, index]
       loading: false,
+      showColourPalette: false
     };
 
     this.id2List = {
@@ -276,6 +277,12 @@ class DifferentialDiagnosis extends React.Component {
   render() {
     const pageTitleButtons = [
       <FontAwesomeIcon
+        icon={faPalette}
+        size="3x"
+        style={{ cursor: "pointer" }}
+        onClick={() => this.setState({showColourPalette: !this.state.showColourPalette})}
+      />,
+      <FontAwesomeIcon
         icon={faSave}
         size="3x"
         style={{ cursor: "pointer" }}
@@ -298,11 +305,11 @@ class DifferentialDiagnosis extends React.Component {
             <List
               title={`Likely Diagnoses`}
               colour="#5DAD89"
+              showColourPalette={this.state.showColourPalette}
               droppableId="droppable1"
               rows={this.state.listA}
               addRow={() => this.addRow(this.state.listA)}
               deleteRow={(index) => {
-                console.log(this.state.listA[index]);
                 if (this.state.listA[index].snomed.code) {
                   this.setState({ deletingRow: [this.state.listA, index] });
                 } else {
@@ -331,11 +338,11 @@ class DifferentialDiagnosis extends React.Component {
             <List
               title={`Critical`}
               colour="#DA7676"
+              showColourPalette={this.state.showColourPalette}
               droppableId="droppable2"
               rows={this.state.listB}
               addRow={() => this.addRow(this.state.listB)}
               deleteRow={(index) => {
-                console.log(this.state.listB[index]);
                 if (this.state.listB[index].snomed.code) {
                   this.setState({ deletingRow: [this.state.listB, index] });
                 } else {

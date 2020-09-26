@@ -10,15 +10,15 @@ import {
     faMinusCircle,
     faAngleDoubleRight,
     faAngleDoubleLeft,
-    faPalette,
     faComment,
-    faCommentMedical, faBorderNone
+    faCommentMedical,
+    faTintSlash
 } from '@fortawesome/free-solid-svg-icons'
 
 
-export default function List({title, colour, rows, addRow, deleteRow, updateRowNumber, droppableId, transfer, isLeft, setSnomed, setNote}){
-    const [paletteVisibility, setPaletteVisibility] = useState(false);
+export default function List({title, colour, showColourPalette, rows, addRow, deleteRow, updateRowNumber, droppableId, transfer, isLeft, setSnomed, setNote}){
     const [listColour, setListColour] = useState(colour);
+    const [resetColourColour, setResetColourColour] = useState("white")
 
     const getListStyle = () => ({
         padding: "0.5em",
@@ -31,20 +31,29 @@ export default function List({title, colour, rows, addRow, deleteRow, updateRowN
         ...draggableStyle
     });
 
-    const listButtons = [
-        <FontAwesomeIcon
-            icon={faPalette}
-            size="3x"
-            style={{cursor: "pointer"}}
-            onClick={() => setPaletteVisibility(!paletteVisibility)}
-        />
-    ];
+    const listButtons = [];
+    if (showColourPalette && listColour !== colour) {
+        listButtons.push((
+            <FontAwesomeIcon
+                icon={faTintSlash}
+                size="2x"
+                style={{ cursor: "pointer" }}
+                color={resetColourColour}
+                onMouseEnter={() => setResetColourColour("grey")}
+                onMouseLeave={() => setResetColourColour("white")}
+                onClick={() => {
+                    setListColour(colour);
+                    setResetColourColour("white");
+                }}
+            />
+        ));
+    }
 
     return (
         <div className="list" style={{backgroundColor: listColour, color: listColour}}>
 
             <TitleBar title={title} buttons={listButtons}/>
-            {paletteVisibility &&
+            {showColourPalette &&
             (
                 <div style={{background: "#00000060"}}>
                 <SliderPicker
