@@ -23,7 +23,8 @@ class DifferentialDiagnosis extends React.Component {
         //        code: 1233,
         //        display: "cancer"
         //     },
-        //     note: ""
+        //     note: "",
+        //     isNoteOpen: false
         // }
       ],
       listB: [],
@@ -94,6 +95,7 @@ class DifferentialDiagnosis extends React.Component {
       id: new Date().getTime(),
       snomed: {},
       note: "",
+      isNotesOpen: false
     });
 
     if (list == this.state.listA) this.setState({ listA: [...list] });
@@ -341,6 +343,10 @@ class DifferentialDiagnosis extends React.Component {
                 row.note = newNote;
                 this.setState({ listA: [...this.state.listA] });
               }}
+              setNotesOpen={(row, isNotesOpen) => {
+                row.isNotesOpen = isNotesOpen;
+                this.setState({ listA: [...this.state.listA] });
+              }}
               isLeft={true}
             />
 
@@ -372,6 +378,10 @@ class DifferentialDiagnosis extends React.Component {
               }}
               setNote={(row, newNote) => {
                 row.note = newNote;
+                this.setState({ listB: [...this.state.listB] });
+              }}
+              setNotesOpen={(row, isNotesOpen) => {
+                row.isNotesOpen = isNotesOpen;
                 this.setState({ listB: [...this.state.listB] });
               }}
               isLeft={false}

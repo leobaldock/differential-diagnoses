@@ -17,7 +17,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons'
 
 
-export default function List({title, colour, showColourPalette, rows, addRow, deleteRow, updateRowNumber, droppableId, transfer, isLeft, setSnomed, setNote}){
+export default function List({title, colour, showColourPalette, rows, addRow, deleteRow, updateRowNumber, droppableId, transfer, isLeft, setSnomed, setNote, setNotesOpen}){
     const [listColour, setListColour] = useLocalStorage(`${isLeft ? "left" : "right"}_list_colour`, colour);
     const [resetColourColour, setResetColourColour] = useState("white")
 
@@ -102,6 +102,8 @@ export default function List({title, colour, showColourPalette, rows, addRow, de
                                                 <ListRow
                                                     setSnomed={newSnomed => setSnomed(row, newSnomed)}
                                                     setNote={newNote => setNote(row, newNote)}
+                                                    setNotesOpen={newIsNotesOpen => setNotesOpen(row, newIsNotesOpen)}
+                                                    isNotesOpen={row.isNotesOpen}
                                                     content={row.snomed}
                                                     note={row.note}
                                                     rowNumber={index + 1}
@@ -132,13 +134,11 @@ export default function List({title, colour, showColourPalette, rows, addRow, de
 }
 
 
-function ListRow({listColour, note, content, rowNumber, deleteRow, updateRowNumber, transfer, setNote, isLeft, setSnomed}) {
+function ListRow({listColour, note, content, isNotesOpen, rowNumber, deleteRow, updateRowNumber, transfer, setNote, isLeft, setSnomed, setNotesOpen}) {
 
     const [inputNum, setInputNum] = useState(rowNumber);
     const [commentColour, setCommentColour] = useState("grey");
     const [deleteColour, setDeleteColour] = useState("grey");
-    const [isNotesOpen, setNotesOpen] = useState(false);
-
 
     const handleKeyDown = (e) => {
         if (e.key == "Enter") {
@@ -151,6 +151,7 @@ function ListRow({listColour, note, content, rowNumber, deleteRow, updateRowNumb
     }
 
     useEffect(() => setInputNum(rowNumber), [rowNumber]);
+
     return (
         <div className="listRow">
             {!isLeft &&
@@ -176,14 +177,13 @@ function ListRow({listColour, note, content, rowNumber, deleteRow, updateRowNumb
                     </span>
                     <div>
                         <FontAwesomeIcon
-                                onClick={() => deleteRow(rowNumber - 1)}
-                                style={{cursor: "pointer", transition: "0.1s ease"}}
-                                color={commentColour}
-                                icon={note ? faComment : faCommentMedical}
-                                onClick={() => setNotesOpen(!isNotesOpen)}
-                                onMouseEnter={() => setCommentColour(listColour)}
-                                onMouseLeave={() => setCommentColour("grey")}
-                            />
+                            style={{cursor: "pointer", transition: "0.1s ease"}}
+                            color={commentColour}
+                            icon={note ? faComment : faCommentMedical}
+                            onClick={() => setNotesOpen(!isNotesOpen)}
+                            onMouseEnter={() => setCommentColour(listColour)}
+                            onMouseLeave={() => setCommentColour("grey")}
+                        />
                         <FontAwesomeIcon
                             onClick={() => deleteRow(rowNumber - 1)}
                             style={{cursor: "pointer", paddingLeft:"0.5em"}}
