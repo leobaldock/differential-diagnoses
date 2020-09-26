@@ -29,7 +29,8 @@ class DifferentialDiagnosis extends React.Component {
       listB: [],
       deletingRow: null, // [list, index]
       loading: false,
-      showColourPalette: false
+      showColourPalette: false,
+      showColourPaletteColour: "white"
     };
 
     this.id2List = {
@@ -280,7 +281,10 @@ class DifferentialDiagnosis extends React.Component {
         icon={faPalette}
         size="3x"
         style={{ cursor: "pointer" }}
-        onClick={() => this.setState({showColourPalette: !this.state.showColourPalette})}
+        onClick={() => this.setState({showColourPalette: !this.state.showColourPalette})} 
+        color={this.state.showColourPaletteColour}
+        onMouseEnter={() => this.setState({showColourPaletteColour: "grey"})}
+        onMouseLeave={() => this.setState({showColourPaletteColour: "white"})}
       />,
       <FontAwesomeIcon
         icon={faSave}
@@ -296,6 +300,11 @@ class DifferentialDiagnosis extends React.Component {
 
     return (
       <div
+        onClick={() => {
+          if (this.state.showColourPalette) {
+            this.setState({showColourPalette: false});
+          }
+        }}
         style={{ height: "100vh", padding: 0, margin: 0, maxHeight: "100vh", width: "100w", maxWidth: "100vw", display: "flex", flexDirection: "column" }}
       >
         <TitleBar title="Differential Diagnoses" buttons={pageTitleButtons} backgroundColor="#343434" />

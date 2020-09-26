@@ -51,26 +51,27 @@ export default function List({title, colour, showColourPalette, rows, addRow, de
 
     return (
         <div className="list" style={{backgroundColor: listColour, color: listColour}}>
-
-            <TitleBar title={title} buttons={listButtons}/>
-            {showColourPalette &&
-            (
-                <div style={{background: "#00000060"}}>
-                <SliderPicker
-                    color = {listColour}
-                    onChange={(e) => setListColour(e.hex)}
-                    styles = {{
-                        default: {
-                            hue: {
-                                height: '10px',
-                                width: '90%',
-                                margin: 'auto',
-                            },
-                        }
-                    }}
-                />
-              </div>
-            )}
+            <div onClick={(e) => e.stopPropagation()}>
+                <TitleBar title={title} buttons={listButtons}/>
+                {showColourPalette &&
+                (
+                    <div style={{background: "#00000060"}}>
+                    <SliderPicker
+                        color = {listColour}
+                        onChange={(e) => setListColour(e.hex)}
+                        styles = {{
+                            default: {
+                                hue: {
+                                    height: '10px',
+                                    width: '90%',
+                                    margin: 'auto',
+                                },
+                            }
+                        }}
+                    />
+                </div>
+                )}
+            </div>
 
             <div className="listRowContainer">
                 <div className="listRowScroll">
