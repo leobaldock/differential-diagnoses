@@ -289,9 +289,9 @@ class DifferentialDiagnosis extends React.Component {
 
     return (
       <div
-        style={{ height: "100vh", display: "flex", flexDirection: "column" }}
+        style={{ height: "100vh", padding: 0, margin: 0, maxHeight: "100vh", width: "100w", maxWidth: "100vw", display: "flex", flexDirection: "column" }}
       >
-        <TitleBar title="Differential Diagnoses" buttons={pageTitleButtons} />
+        <TitleBar title="Differential Diagnoses" buttons={pageTitleButtons} backgroundColor="#343434" />
 
         <div className="listContainer">
           <DragDropContext onDragEnd={this.onDragEnd}>

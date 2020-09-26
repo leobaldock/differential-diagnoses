@@ -13,6 +13,7 @@
     padding: 1em;
     flex-grow: 1;
     align-items: stretch;
+    min-height: 0;
 }
 
 .listContainer .list:nth-child(1) {
@@ -28,7 +29,7 @@
     flex-basis: 0px;
     display: flex;
     flex-direction: column;
-    max-height: 78vh;
+    /* max-height: 78vh; */
     position: relative;
 }
 
@@ -131,7 +132,7 @@
     cursor: pointer;
 }
 
-/* Paleete */
+/* Palette */
 .hue-horizontal{
     border-radius: 10px;
 }
@@ -171,6 +172,7 @@
     left: 0;
     backdrop-filter: blur(3px);
     background-color: #00000040;
+    z-index: 10;
 }
 
 .popupContainer {
@@ -184,6 +186,7 @@
    display: flex;
    align-items: center;
    justify-content: center;
+   z-index: 10;
 }
 
 .popup {
