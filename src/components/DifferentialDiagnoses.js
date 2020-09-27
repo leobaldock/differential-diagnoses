@@ -4,7 +4,8 @@ import List from "./List";
 import "./Diagnoses.css";
 import Popup from "./Popup";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faSave, faPalette } from "@fortawesome/free-solid-svg-icons";
+import { faSave, faPalette, faComments as faCommentsSolid } from "@fortawesome/free-solid-svg-icons";
+import { faComments as faCommentsRegular } from "@fortawesome/free-regular-svg-icons";
 import { DragDropContext } from "react-beautiful-dnd";
 import { withFHIR } from "../state/fhir";
 import { CircleLoader } from "react-spinners";
@@ -31,7 +32,8 @@ class DifferentialDiagnosis extends React.Component {
       deletingRow: null, // [list, index]
       loading: false,
       showColourPalette: false,
-      showColourPaletteColour: "white"
+      showColourPaletteColour: "white",
+      toggleNotesColour: "white"
     };
 
     this.id2List = {
@@ -278,22 +280,46 @@ class DifferentialDiagnosis extends React.Component {
   }
 
   render() {
+
+    const areAllCommentsOpen = this.state.listA.every(row => row.isNotesOpen)
+        && this.state.listB.every(row => row.isNotesOpen)
+
     const pageTitleButtons = [
       <FontAwesomeIcon
+        key="toggle_comments_button"
+        icon={areAllCommentsOpen ? faCommentsRegular : faCommentsSolid}
+        title={areAllCommentsOpen ? "Hide all notes" : "Show all notes"}
+        onClick={() => this.setState(prevState => ({
+          listA: prevState.listA.map(
+            row => ({ ...row, isNotesOpen: !areAllCommentsOpen })
+          ),
+          listB: prevState.listB.map(
+            row => ({ ...row, isNotesOpen: !areAllCommentsOpen })
+          )
+        }))}
+        size="3x"
+        style={{ cursor: "pointer" }}
+        color={this.state.toggleNotesColour}
+        onMouseOver={() => this.setState({toggleNotesColour: "grey"})}
+        onMouseLeave={() => this.setState({toggleNotesColour: "white"})}
+      />,
+      <FontAwesomeIcon
+        key="toggle_colour_palette_button"
         icon={faPalette}
         size="3x"
         style={{ cursor: "pointer" }}
         onClick={() => this.setState({showColourPalette: !this.state.showColourPalette})} 
         color={this.state.showColourPaletteColour}
-        onMouseEnter={() => this.setState({showColourPaletteColour: "grey"})}
+        onMouseOver={() => this.setState({showColourPaletteColour: "grey"})}
         onMouseLeave={() => this.setState({showColourPaletteColour: "white"})}
       />,
       <FontAwesomeIcon
+        key="save_button"
         icon={faSave}
         size="3x"
         style={{ cursor: "pointer" }}
         onClick={this.saveToFHIR}
-      />,
+      />
     ];
 
     if (this.state.loading) {
@@ -398,40 +424,6 @@ class DifferentialDiagnosis extends React.Component {
             {this.state.deletingRow[0][this.state.deletingRow[1]].content}
           </Popup>
         )}
-
-        {/* {this.state.showNotes && (
-          <Popup
-            title={"Add a comment for " + this.state.showNotes.content}
-            noCallback={() => this.setState({ showNotes: null })}
-            yesCallback={() => {
-              const newList = [...this.state.showNotes.list];
-              const item = newList.find(x => x.id == this.state.showNotes.id);
-              if (item) item.note = this.state.showNotes.note;
-
-              const newState = {
-                showNotes: null,
-              };
-
-              if (this.state.showNotes.list == this.state.listA) 
-                newState.listA = newList;
-              else if (this.state.showNotes.list == this.state.listB)
-                newState.listB = newList;
-              else console.log("Unknown list");
-
-              this.setState(newState);
-            }}
-          >
-            <textarea
-              className="commentBox"
-              value={this.state.showNotes.note}
-              onChange={(e) => {
-                let row = this.state.showNotes;
-                row.note = e.target.value;
-                this.setState({ showNotes: row });
-              }}
-            />
-          </Popup>
-        )} */}
       </div>
     );
   }

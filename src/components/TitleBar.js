@@ -6,9 +6,9 @@ const TitleBar = ({ title, buttons, backgroundColor }) => {
   if (backgroundColor) style.backgroundColor = backgroundColor
 
   return (
-    <div style={style} class="titleBar">
+    <div style={style} className="titleBar">
       <h1>{title.toUpperCase()}</h1>
-      <div class="buttonContainer">{buttons.map((x) => x)}</div>
+      <div className="buttonContainer">{buttons.map((x) => x)}</div>
     </div>
   );
 };

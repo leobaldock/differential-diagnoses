@@ -44,6 +44,7 @@ export default function List({title, colour, showColourPalette, rows, addRow, de
             <FontAwesomeIcon
                 icon={faTintSlash}
                 size="2x"
+                title="Reset Colour"
                 style={{ cursor: "pointer" }}
                 color={resetColourColour}
                 onMouseEnter={() => setResetColourColour("grey")}
@@ -179,17 +180,19 @@ function ListRow({listColour, note, content, isNotesOpen, rowNumber, deleteRow, 
                         <FontAwesomeIcon
                             style={{cursor: "pointer", transition: "0.1s ease"}}
                             color={commentColour}
+                            title={isNotesOpen ? "Hide Note" : "Show note"}
                             icon={note ? faComment : faCommentMedical}
                             onClick={() => setNotesOpen(!isNotesOpen)}
-                            onMouseEnter={() => setCommentColour(listColour)}
+                            onMouseOver={() => setCommentColour(listColour)}
                             onMouseLeave={() => setCommentColour("grey")}
                         />
                         <FontAwesomeIcon
                             onClick={() => deleteRow(rowNumber - 1)}
+                            title="Delete Diagnosis"
                             style={{cursor: "pointer", paddingLeft:"0.5em"}}
                             color={deleteColour}
                             icon={faMinusCircle}
-                            onMouseEnter={() => setDeleteColour(listColour)}
+                            onMouseOver={() => setDeleteColour(listColour)}
                             onMouseLeave={() => setDeleteColour("grey")}
                         />
                     </div>
