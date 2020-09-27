@@ -105,10 +105,8 @@ export default class SnomedSearch extends React.Component {
                     cacheOptions
                     loadOptions={search}
                     onInputChange={(inputValue, {action}) => {
-                        switch(action) {
-                            case 'input-change':
-                                this.setState({snomedValue: {code: inputValue.value, display: inputValue.label}});
-                                return;
+                        if (action === 'input-change') {
+                            this.setState({snomedValue: {code: inputValue.value, display: inputValue.label}});
                         }
                     }}
                     onChange={async (inputValue, data) => {

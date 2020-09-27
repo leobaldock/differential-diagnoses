@@ -76,7 +76,7 @@ class DifferentialDiagnosis extends React.Component {
             (c) => c.fullUrl === `${FHIR.iss}/${e.condition.reference}`
           ).resource;
 
-          let list = e.role.text == "Likely" ? newListA : newListB;
+          let list = e.role.text === "Likely" ? newListA : newListB;
           list.splice(e.rank, 0, {
             id: index,
             note: "",
@@ -100,8 +100,8 @@ class DifferentialDiagnosis extends React.Component {
       isNotesOpen: false
     });
 
-    if (list == this.state.listA) this.setState({ listA: [...list] });
-    else if (list == this.state.listB) this.setState({ listB: [...list] });
+    if (list === this.state.listA) this.setState({ listA: [...list] });
+    else if (list === this.state.listB) this.setState({ listB: [...list] });
     else console.log("Unknown list");
   }
 
@@ -112,8 +112,8 @@ class DifferentialDiagnosis extends React.Component {
       deletingRow: null,
     };
 
-    if (list == this.state.listA) newState.listA = list;
-    else if (list == this.state.listB) newState.listB = list;
+    if (list === this.state.listA) newState.listA = list;
+    else if (list === this.state.listB) newState.listB = list;
     else console.log("Unknown list");
 
     this.setState(newState);
@@ -158,12 +158,12 @@ class DifferentialDiagnosis extends React.Component {
 
     let newState = {};
 
-    if (sourceList == this.state.listA) newState.listA = sourceClone;
-    else if (sourceList == this.state.listB) newState.listB = sourceClone;
+    if (sourceList === this.state.listA) newState.listA = sourceClone;
+    else if (sourceList === this.state.listB) newState.listB = sourceClone;
     else console.log("Uknown List");
 
-    if (destinationList == this.state.listA) newState.listA = destClone;
-    else if (destinationList == this.state.listB) newState.listB = destClone;
+    if (destinationList === this.state.listA) newState.listA = destClone;
+    else if (destinationList === this.state.listB) newState.listB = destClone;
     else console.log("Unkown List");
 
     this.setState(newState);
@@ -195,8 +195,8 @@ class DifferentialDiagnosis extends React.Component {
       const list = this.getList(source.droppableId);
       const items = this.reorder(list, source.index, destination.index);
 
-      if (list == this.state.listA) this.setState({ listA: items });
-      else if (list == this.state.listB) this.setState({ listB: items });
+      if (list === this.state.listA) this.setState({ listA: items });
+      else if (list === this.state.listB) this.setState({ listB: items });
       else console.log("Unknown list");
     } else {
       const result = this.move(

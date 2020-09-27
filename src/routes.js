@@ -1,5 +1,5 @@
 import React from "react";
-import { useHistory, useLocation, Switch, Route } from "react-router-dom";
+import { useLocation, Switch, Route } from "react-router-dom";
 import queryString from 'query-string'
 
 import Home from "./containers/home";

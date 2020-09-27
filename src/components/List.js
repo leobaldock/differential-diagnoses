@@ -142,7 +142,7 @@ function ListRow({listColour, note, content, isNotesOpen, rowNumber, deleteRow, 
     const [deleteColour, setDeleteColour] = useState("grey");
 
     const handleKeyDown = (e) => {
-        if (e.key == "Enter") {
+        if (e.key === "Enter") {
             updateRowNumber(rowNumber - 1, inputNum - 1);
         }
     }
@@ -164,7 +164,7 @@ function ListRow({listColour, note, content, isNotesOpen, rowNumber, deleteRow, 
             <div className="listNumber">
                 <input
                     style={{color: "white", background: "#00000060"}}
-                    value={inputNum} onChange={(e) => setInputNum(e.target.value.replace(/[^0-9\.]+/g, ''))}
+                    value={inputNum} onChange={(e) => setInputNum(e.target.value.replace(/[^0-9]+/g, ''))}
                     onKeyDown={handleKeyDown}
                     onBlur={handleBlur}
                     type="text"
