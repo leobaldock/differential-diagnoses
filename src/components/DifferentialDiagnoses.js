@@ -1,14 +1,14 @@
-import React from "react";
-import TitleBar from "./TitleBar";
-import List from "./List";
-import "./Diagnoses.css";
-import Popup from "./Popup";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faSave, faPalette, faComments as faCommentsSolid } from "@fortawesome/free-solid-svg-icons";
 import { faComments as faCommentsRegular } from "@fortawesome/free-regular-svg-icons";
+import { faComments as faCommentsSolid, faPalette, faSave } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import React from "react";
 import { DragDropContext } from "react-beautiful-dnd";
-import { withFHIR } from "../state/fhir";
 import { CircleLoader } from "react-spinners";
+import { withFHIR } from "../state/fhir";
+import "./Diagnoses.css";
+import List from "./List";
+import Popup from "./Popup";
+import TitleBar from "./TitleBar";
 
 class DifferentialDiagnosis extends React.Component {
   constructor(props) {
@@ -297,7 +297,7 @@ class DifferentialDiagnosis extends React.Component {
             row => ({ ...row, isNotesOpen: !areAllCommentsOpen })
           )
         }))}
-        size="3x"
+        size="2x"
         style={{ cursor: "pointer" }}
         color={this.state.toggleNotesColour}
         onMouseOver={() => this.setState({toggleNotesColour: "grey"})}
@@ -306,7 +306,7 @@ class DifferentialDiagnosis extends React.Component {
       <FontAwesomeIcon
         key="toggle_colour_palette_button"
         icon={faPalette}
-        size="3x"
+        size="2x"
         style={{ cursor: "pointer" }}
         onClick={() => this.setState({showColourPalette: !this.state.showColourPalette})} 
         color={this.state.showColourPaletteColour}
@@ -316,7 +316,7 @@ class DifferentialDiagnosis extends React.Component {
       <FontAwesomeIcon
         key="save_button"
         icon={faSave}
-        size="3x"
+        size="2x"
         style={{ cursor: "pointer" }}
         onClick={this.saveToFHIR}
       />
@@ -340,7 +340,7 @@ class DifferentialDiagnosis extends React.Component {
         <div className="listContainer">
           <DragDropContext onDragEnd={this.onDragEnd}>
             <List
-              title={`Likely Diagnoses`}
+              title="Likely Diagnoses"
               colour="#5DAD89"
               showColourPalette={this.state.showColourPalette}
               droppableId="droppable1"
@@ -377,7 +377,7 @@ class DifferentialDiagnosis extends React.Component {
             />
 
             <List
-              title={`Critical`}
+              title="Need to Know"
               colour="#DA7676"
               showColourPalette={this.state.showColourPalette}
               droppableId="droppable2"

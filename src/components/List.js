@@ -13,13 +13,15 @@ import {
     faAngleDoubleLeft,
     faComment,
     faCommentMedical,
-    faTintSlash
+    faTintSlash,
+    faPlusSquare
 } from '@fortawesome/free-solid-svg-icons'
 
 
 export default function List({title, colour, showColourPalette, rows, addRow, deleteRow, updateRowNumber, droppableId, transfer, isLeft, setSnomed, setNote, setNotesOpen}){
     const [listColour, setListColour] = useLocalStorage(`${isLeft ? "left" : "right"}_list_colour`, colour);
     const [resetColourColour, setResetColourColour] = useState("white")
+    const [addColour, setAddColour] = useState("white")
 
     const getListStyle = (snapshot) => {
         // console.log(snapshot);
@@ -38,9 +40,20 @@ export default function List({title, colour, showColourPalette, rows, addRow, de
         }
     };
 
-    const listButtons = [];
+    const listButtons = [
+        <FontAwesomeIcon
+            icon={faPlusSquare}
+            size="2x"
+            title="Add New Diagnosis"
+            style={{ cursor: "pointer" }}
+            color={addColour}
+            onMouseEnter={() => setAddColour("grey")}
+            onMouseLeave={() => setAddColour("white")}
+            onClick={addRow}
+        />
+    ];
     if (showColourPalette && listColour !== colour) {
-        listButtons.push((
+        listButtons.unshift((
             <FontAwesomeIcon
                 icon={faTintSlash}
                 size="2x"
@@ -123,12 +136,7 @@ export default function List({title, colour, showColourPalette, rows, addRow, de
                             </div>
                         )}
                     </Droppable>
-                </div>
-                <div className="addRowButton" style={{background: listColour}}>
-                    <div className="overlay">
-                        <span onClick={addRow}> + ADD NEW DIAGNOSIS </span>
-                    </div>
-                </div>      
+                </div>    
             </div>
         </div>
     )
