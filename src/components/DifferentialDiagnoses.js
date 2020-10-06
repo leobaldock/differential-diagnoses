@@ -333,7 +333,7 @@ class DifferentialDiagnosis extends React.Component {
             this.setState({showColourPalette: false});
           }
         }}
-        style={{ height: "100vh", padding: 0, margin: 0, maxHeight: "100vh", width: "100w", maxWidth: "100vw", display: "flex", flexDirection: "column" }}
+        style={{ height: "100vh", padding: 0, margin: 0, maxHeight: "100vh", width: "100w", maxWidth: "100vw", display: "flex", flexDirection: "column", backgroundColor: "#404040" }}
       >
         <TitleBar title="Differential Diagnoses" buttons={pageTitleButtons} backgroundColor="#343434" />
 
