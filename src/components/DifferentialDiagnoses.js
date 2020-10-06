@@ -30,7 +30,7 @@ class DifferentialDiagnosis extends React.Component {
       ],
       listB: [],
       deletingRow: null, // [list, index]
-      loading: false,
+      loading: true,
       showColourPalette: false,
       showColourPaletteColour: "white",
       toggleNotesColour: "white"

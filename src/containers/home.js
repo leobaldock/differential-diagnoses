@@ -29,90 +29,84 @@ const Home = (props) => {
 
   /* Runs when iss or launch data changes */
   useEffect(() => {
-
-    const fetchAccessToken = () => {
-      console.log(`Fetching new access token with code ${params.code}...`);
-      fetch(getSecurityUri("token"), {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
-        },
-        body: encodeFormData({
-          grant_type: "authorization_code",
-          code: params.code,
-          client_id: EnvService.getClientId(),
-          redirect_uri: EnvService.getRedirectUri()
-        }),
-      })
-        .then((res) => res.json())
-        .then((data) => {
-          console.log(data);
-          setContextData({ patient: data.patient });
-          setAccessToken({
-            token: data.access_token,
-            expiry: Date.now() + data.expires_in * 1000,
-          });
-        })
-        .catch((error) => console.log(error));
-    };
-
     if (iss && params.code) {
       fetchAccessToken();
     }
-    
-  }, [params, iss, getSecurityUri, setAccessToken]);
+  }, [params, iss]);
 
   /* Runs when access token changes */
   useEffect(() => {
-
-    const fetchPatient = async (patientId) => {
-      if (!patientId) return;
-      getResource(`Patient/${patientId}`).then((res) => setPatient(res));
-    };
-
     console.log(contextData);
     if (tokenIsValid() && contextData != null) {
       fetchPatient(contextData.patient);
     }
-
-  }, [accessToken, contextData, getResource, setPatient, tokenIsValid]);
+  }, [accessToken, contextData]);
 
   /* Runs when patient resource changes */
   useEffect(() => {
-
-    /**
-     * Search for an EpisodeOfCare resource for this patient and create one if none exists.
-     */
-    const fetchCreateEpisodeOfCare = async () => {
-      console.log(patient);
-      let search = await searchResources(
-        "EpisodeOfCare",
-        {
-          patient: makeRef(patient),
-        },
-        ["-_lastUpdated"]
-      );
-
-      if (search.entry && search.entry.length > 0) {
-        setEpisodeOfCare(search.entry[0].resource);
-        return;
-      }
-
-      const episodeOfCare = await createResource("EpisodeOfCare", {
-        resourceType: "EpisodeOfCare",
-        status: "active",
-        patient: { reference: makeRef(patient) },
-      });
-
-      setEpisodeOfCare(episodeOfCare);
-    };
-
     console.log(patient);
     if (tokenIsValid() && patient) {
       fetchCreateEpisodeOfCare();
     }
+  }, [patient]);
 
-  }, [patient, createResource, makeRef, searchResources, setEpisodeOfCare, tokenIsValid]);
+  const fetchAccessToken = () => {
+    console.log(`Fetching new access token with code ${params.code}...`);
+    fetch(getSecurityUri("token"), {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: encodeFormData({
+        grant_type: "authorization_code",
+        code: params.code,
+        client_id: EnvService.getClientId(),
+        redirect_uri: EnvService.getRedirectUri(),
+      }),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        console.log(data);
+        setContextData({ patient: data.patient });
+        setAccessToken({
+          token: data.access_token,
+          expiry: Date.now() + data.expires_in * 1000,
+        });
+      })
+      .catch((error) => console.log(error));
+  };
+
+  const fetchPatient = async (patientId) => {
+    if (!patientId) return;
+    getResource(`Patient/${patientId}`).then((res) => setPatient(res));
+  };
+
+  /**
+   * Search for an EpisodeOfCare resource for this patient and create one if none exists.
+   */
+  const fetchCreateEpisodeOfCare = async () => {
+    console.log(patient);
+    let search = await searchResources(
+      "EpisodeOfCare",
+      {
+        patient: makeRef(patient),
+      },
+      ["-_lastUpdated"]
+    );
+
+    if (search.entry && search.entry.length > 0) {
+      setEpisodeOfCare(search.entry[0].resource);
+      return;
+    }
+
+    const episodeOfCare = await createResource("EpisodeOfCare", {
+      resourceType: "EpisodeOfCare",
+      status: "active",
+      patient: { reference: makeRef(patient) },
+    });
+
+    setEpisodeOfCare(episodeOfCare);
+  };
 
   return (
     <div>
