@@ -1,11 +1,11 @@
 import { faComments as faCommentsRegular } from "@fortawesome/free-regular-svg-icons";
-import { faComments as faCommentsSolid, faPalette, faSave } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faComments as faCommentsSolid, faDownload, faPalette, faSave } from "@fortawesome/free-solid-svg-icons";
 import React from "react";
 import { DragDropContext } from "react-beautiful-dnd";
 import { CircleLoader } from "react-spinners";
 import { withFHIR } from "../state/fhir";
 import "./Diagnoses.css";
+import FAIButton from "./FAIButton";
 import List from "./List";
 import Popup from "./Popup";
 import TitleBar from "./TitleBar";
@@ -32,8 +32,6 @@ class DifferentialDiagnosis extends React.Component {
       deletingRow: null, // [list, index]
       loading: false,
       showColourPalette: false,
-      showColourPaletteColour: "white",
-      toggleNotesColour: "white"
     };
 
     this.id2List = {
@@ -50,6 +48,7 @@ class DifferentialDiagnosis extends React.Component {
     this.move = this.move.bind(this);
     this.manualMove = this.manualMove.bind(this);
     this.saveToFHIR = this.saveToFHIR.bind(this);
+    this.getExportableObject = this.getExportableObject.bind(this);
   }
 
   componentDidUpdate(prevProps) {
@@ -90,6 +89,26 @@ class DifferentialDiagnosis extends React.Component {
         this.setState({ listA: newListA, listB: newListB, loading: false });
       });
     }
+  }
+
+  getExportableObject() {
+    return {
+      "Likely Diagnoses": this.state.listA.map(row => ({
+        "Name": row.snomed.display,
+        "SNOMED Code": row.snomed.code,
+        "Note": row.note
+      })),
+      "Need to Know": this.state.listB.map(row => ({
+        "Name": row.snomed.display,
+        "SNOMED Code": row.snomed.code,
+        "Note": row.note
+      })),
+      "Metadata": {
+        // bump this every time you change the format of the export.
+        // that we we can handle imports properly.
+        "Schema Version": 1
+      }
+    };
   }
 
   addRow(list) {
@@ -289,7 +308,7 @@ class DifferentialDiagnosis extends React.Component {
         && this.state.listB.every(row => row.isNotesOpen)
 
     const pageTitleButtons = [
-      <FontAwesomeIcon
+      <FAIButton
         key="toggle_comments_button"
         icon={areAllCommentsOpen ? faCommentsRegular : faCommentsSolid}
         title={areAllCommentsOpen ? "Hide all notes" : "Show all notes"}
@@ -301,22 +320,19 @@ class DifferentialDiagnosis extends React.Component {
             row => ({ ...row, isNotesOpen: !areAllCommentsOpen })
           )
         }))}
-        size="2x"
-        style={{ cursor: "pointer" }}
-        color={this.state.toggleNotesColour}
-        onMouseOver={() => this.setState({toggleNotesColour: "grey"})}
-        onMouseLeave={() => this.setState({toggleNotesColour: "white"})}
       />,
-      <FontAwesomeIcon
+      <FAIButton
         key="toggle_colour_palette_button"
         icon={faPalette}
-        size="2x"
-        style={{ cursor: "pointer" }}
+        title={this.state.showColourPalette ? "Hide colour editor" : "Show colour editor"}
         onClick={() => this.setState({showColourPalette: !this.state.showColourPalette})} 
-        color={this.state.showColourPaletteColour}
-        onMouseOver={() => this.setState({showColourPaletteColour: "grey"})}
-        onMouseLeave={() => this.setState({showColourPaletteColour: "white"})}
       />,
+      <FAIButton
+        key="export_button"
+        icon={faDownload}
+        title="Export as text file"
+        onClick={() => downloadObjectAsJson(this.getExportableObject(), "DiagnoSys Export")}
+      />
       // <FontAwesomeIcon
       //   key="save_button"
       //   icon={faSave}
@@ -427,6 +443,16 @@ class DifferentialDiagnosis extends React.Component {
       </div>
     );
   }
+}
+
+function downloadObjectAsJson(exportObj, exportName){
+  var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(exportObj, null, 2));
+  var downloadAnchorNode = document.createElement('a');
+  downloadAnchorNode.setAttribute("href",     dataStr);
+  downloadAnchorNode.setAttribute("download", exportName + ".json");
+  document.body.appendChild(downloadAnchorNode); // required for firefox
+  downloadAnchorNode.click();
+  downloadAnchorNode.remove();
 }
 
 export default withFHIR(DifferentialDiagnosis);
