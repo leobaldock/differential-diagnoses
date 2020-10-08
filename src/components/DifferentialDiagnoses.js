@@ -1,6 +1,5 @@
 import { faComments as faCommentsRegular } from "@fortawesome/free-regular-svg-icons";
 import { faComments as faCommentsSolid, faDownload, faPalette, faSave } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
 import { DragDropContext } from "react-beautiful-dnd";
 import { CircleLoader } from "react-spinners";
@@ -33,8 +32,6 @@ class DifferentialDiagnosis extends React.Component {
       deletingRow: null, // [list, index]
       loading: false,
       showColourPalette: false,
-      showColourPaletteColour: "white",
-      toggleNotesColour: "white"
     };
 
     this.id2List = {
@@ -106,6 +103,11 @@ class DifferentialDiagnosis extends React.Component {
         "SNOMED Code": row.snomed.code,
         "Note": row.note
       })),
+      "Metadata": {
+        // bump this every time you change the format of the export.
+        // that we we can handle imports properly.
+        "Schema Version": 1
+      }
     };
   }
 
@@ -306,7 +308,7 @@ class DifferentialDiagnosis extends React.Component {
         && this.state.listB.every(row => row.isNotesOpen)
 
     const pageTitleButtons = [
-      <FontAwesomeIcon
+      <FAIButton
         key="toggle_comments_button"
         icon={areAllCommentsOpen ? faCommentsRegular : faCommentsSolid}
         title={areAllCommentsOpen ? "Hide all notes" : "Show all notes"}
@@ -318,23 +320,15 @@ class DifferentialDiagnosis extends React.Component {
             row => ({ ...row, isNotesOpen: !areAllCommentsOpen })
           )
         }))}
-        size="2x"
-        style={{ cursor: "pointer" }}
-        color={this.state.toggleNotesColour}
-        onMouseOver={() => this.setState({toggleNotesColour: "grey"})}
-        onMouseLeave={() => this.setState({toggleNotesColour: "white"})}
-      />,
-      <FontAwesomeIcon
-        key="toggle_colour_palette_button"
-        icon={faPalette}
-        size="2x"
-        style={{ cursor: "pointer" }}
-        onClick={() => this.setState({showColourPalette: !this.state.showColourPalette})} 
-        color={this.state.showColourPaletteColour}
-        onMouseOver={() => this.setState({showColourPaletteColour: "grey"})}
-        onMouseLeave={() => this.setState({showColourPaletteColour: "white"})}
       />,
       <FAIButton
+        key="toggle_colour_palette_button"
+        icon={faPalette}
+        title={this.state.showColourPalette ? "Hide colour editor" : "Show colour editor"}
+        onClick={() => this.setState({showColourPalette: !this.state.showColourPalette})} 
+      />,
+      <FAIButton
+        key="export_button"
         icon={faDownload}
         title="Export as text file"
         onClick={() => downloadObjectAsJson(this.getExportableObject(), "DiagnoSys Export")}
