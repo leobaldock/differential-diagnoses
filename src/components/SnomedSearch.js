@@ -30,7 +30,7 @@ export default class SnomedSearch extends React.Component {
 
         this.state = {
             isFocused: false,
-            snomedValue: this.props.content,
+            inputValue: "",
             closeButtonColour: "#808080"
         }
 
@@ -41,6 +41,9 @@ export default class SnomedSearch extends React.Component {
 
     componentDidMount() {
         document.addEventListener("keydown", this.handleKeyPress);
+        
+        // if this is a brand new diagnoses then pop up the search bar
+        if (!this.props.content?.code) this.asyncSelect.current.focus();
     }
 
     componentWillUnmount() {
@@ -60,8 +63,7 @@ export default class SnomedSearch extends React.Component {
             input: (provided) => ({
                 ...provided,
                 /* <input> search */
-                color: this.props.listColour,
-
+                color: this.props.listColour
             }),
             singleValue: (provided) => ({
                 /* saved value */
@@ -73,9 +75,10 @@ export default class SnomedSearch extends React.Component {
                 ...provided,
                 border: "none",
                 boxShadow: "none",
-                transition: "0.5s ease",
+                transition: state.isFocused ? "0.3s ease" : "none",
                 textTransform: "capitalize",
-                minWidth: state.isFocused ? "20em" : 0
+                minWidth: state.isFocused ? "20em" : 0,
+                fontSize: "1.2em"
             }),
             menuList: (provided, state) => ({
                 /* Search Results Container */
@@ -109,7 +112,7 @@ export default class SnomedSearch extends React.Component {
         if (this.state.isFocused) {
             containerStyle = {
                 ...containerStyle,
-                backgroundColor: "#303030A0",
+                backgroundColor: "#101010B0",
                 position: "absolute",
                 top: 0,
                 left: 0,
@@ -127,53 +130,58 @@ export default class SnomedSearch extends React.Component {
         // If we are pre-populating the search (due to a list swap), don't provide
         // a value to the AsyncSelect so that it shows the placeholder text properly.
         const valueProp = {};
-        if (this.props.content.code) valueProp.value = {label: this.state.snomedValue?.display, value: this.state.snomedValue?.code};
-
+        if (this.props.content?.code) valueProp.value = {label: this.props.content.display, value: this.props.content.code};
         return (
-            <div
-                style={containerStyle}
-                onMouseDown={() => {
-                    // this closes the search popup if the user clicks the background
-                    if (this.state.isFocused) {
-                        this.asyncSelect.current.blur()
-                        this.isClosing = true;
-                    }
-                }}
-                onMouseUp={() => this.isClosing = false}
-            >
+            <>
+                {this.state.isFocused &&
+                    <div style={{position: "absolute", bottom: "1em", right: "1em", zIndex: 11, color: "grey", fontSize: "1.3em"}}>
+                        Powered by <strong>SNOMED CT-AU</strong>
+                    </div>
+                }
                 <div
-                    // hacks.. beware...
-                    onMouseDown={(e) => {if(!this.state.isFocused) {this.asyncSelect.current.blur()}}}
-                    onMouseUp={(e) => {if(!this.state.isFocused && !this.isClosing) {this.asyncSelect.current.focus()}}}
+                    style={containerStyle}
+                    onMouseDown={() => {
+                        // this closes the search popup if the user clicks the background
+                        if (this.state.isFocused) {
+                            this.asyncSelect.current.blur()
+                            this.isClosing = true;
+                        }
+                    }}
+                    onMouseUp={() => this.isClosing = false}
                 >
-                    <AsyncSelect
-                        {...valueProp}
-                        ref={this.asyncSelect}
-                        styles={customStyles}
-                        listColour = {this.props.listColour}
-                        components={{
-                            DropdownIndicator: null,
-                            LoadingIndicator: null,
-                            IndicatorSeparator: null,
-                        }}
-                        onFocus={() => this.setState({isFocused: true})}
-                        onBlur={() => this.setState({isFocused: false})}
-                        placeholder= {"Search..."}
-                        cacheOptions
-                        loadOptions={search}
-                        onInputChange={(inputValue, {action}) => {
-                            if (action === 'input-change') {
-                                this.setState({snomedValue: {code: inputValue.value, display: inputValue.label}});
-                            }
-                        }}
-                        onChange={async (inputValue, data) => {
-                            await this.setState({snomedValue: {code: inputValue.value, display: inputValue.label}});
-                            this.props.callback({code: inputValue.value, display: inputValue.label});
-                            this.asyncSelect.current.blur();
-                        }}
-                    />
+                    <div
+                        onMouseDown={(e) => { e.stopPropagation(); if(!this.state.isFocused) {this.asyncSelect.current.blur()}}}
+                        onMouseUp={() => {if(!this.state.isFocused && !this.isClosing) {this.asyncSelect.current.focus()}}}
+                    >
+                        <AsyncSelect
+                            {...valueProp}
+                            ref={this.asyncSelect}
+                            styles={customStyles}
+                            listColour = {this.props.listColour}
+                            components={{
+                                DropdownIndicator: null,
+                                LoadingIndicator: null,
+                                IndicatorSeparator: null,
+                            }}
+                            onFocus={() => this.setState({isFocused: true})}
+                            onBlur={() => this.setState({isFocused: false, inputValue: ""})}
+                            placeholder= {"Search..."}
+                            cacheOptions
+                            loadOptions={search}
+                            inputValue={this.state.inputValue}
+                            onInputChange={(inputValue, {action}) => {
+                                if (action === 'input-change') {
+                                    this.setState({inputValue: inputValue});
+                                }
+                            }}
+                            onChange={async (value, data) => {
+                                this.props.callback({code: value.value, display: value.label});
+                                this.asyncSelect.current.blur();
+                            }}
+                        />
+                    </div>
                 </div>
-            </div>
+            </>
         );
     }
 

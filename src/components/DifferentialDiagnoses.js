@@ -30,7 +30,7 @@ class DifferentialDiagnosis extends React.Component {
       ],
       listB: [],
       deletingRow: null, // [list, index]
-      loading: true,
+      loading: false,
       showColourPalette: false,
       showColourPaletteColour: "white",
       toggleNotesColour: "white"
@@ -281,6 +281,10 @@ class DifferentialDiagnosis extends React.Component {
 
   render() {
 
+    if (this.state.loading) {
+      return this.renderLoading();
+    }
+
     const areAllCommentsOpen = this.state.listA.every(row => row.isNotesOpen)
         && this.state.listB.every(row => row.isNotesOpen)
 
@@ -321,10 +325,6 @@ class DifferentialDiagnosis extends React.Component {
         onClick={this.saveToFHIR}
       />
     ];
-
-    if (this.state.loading) {
-      return this.renderLoading();
-    }
 
     return (
       <div
@@ -421,7 +421,7 @@ class DifferentialDiagnosis extends React.Component {
             yesCallback={() => this.deleteRow(...this.state.deletingRow)}
             noCallback={() => this.setState({ deletingRow: null })}
           >
-            {this.state.deletingRow[0][this.state.deletingRow[1]].content}
+            {this.state.deletingRow[0][this.state.deletingRow[1]].snomed.display}
           </Popup>
         )}
       </div>
