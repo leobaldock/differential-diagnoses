@@ -23,9 +23,12 @@ export default function List({title, colour, showColourPalette, rows, addRow, de
     const [listColour, setListColour] = useLocalStorage(`${isLeft ? "left" : "right"}_list_colour`, colour);
 
     const getListStyle = (snapshot) => {
-        // console.log(snapshot);
+        console.log(snapshot);
         return {
+            backgroundColor: snapshot.isDraggingOver ? "#00000020" : "",
+            transition: "background-color 0.2s ease",
             padding: "0.5em",
+            height: "100%"
         }
     };
 
@@ -134,8 +137,6 @@ export default function List({title, colour, showColourPalette, rows, addRow, de
 function ListRow({listColour, note, content, isNotesOpen, rowNumber, deleteRow, updateRowNumber, transfer, setNote, isLeft, setSnomed, setNotesOpen}) {
 
     const [inputNum, setInputNum] = useState(rowNumber);
-    const [commentColour, setCommentColour] = useState("grey");
-    const [deleteColour, setDeleteColour] = useState("grey");
 
     const handleKeyDown = (e) => {
         if (e.key === "Enter") {
@@ -196,7 +197,7 @@ function ListRow({listColour, note, content, isNotesOpen, rowNumber, deleteRow, 
                     <TextareaAutosize onChange={e => setNote(e.target.value)} value={note} />
                 </div>}
             </div>
-            
+
             {isLeft &&
                 <div className="transferButton" onClick={() => transfer(rowNumber - 1)}>
                     <FontAwesomeIcon icon={faAngleDoubleRight} />

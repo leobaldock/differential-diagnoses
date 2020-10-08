@@ -41,6 +41,10 @@
     overflow: auto;
 }
 
+.listRowScroll {
+    height: 100%
+}
+
 .listRow {
     display: flex;
     align-items: stretch;
