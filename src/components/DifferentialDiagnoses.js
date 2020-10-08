@@ -1,13 +1,14 @@
-import React from "react";
-import TitleBar from "./TitleBar";
-import List from "./List";
-import "./Diagnoses.css";
-import Popup from "./Popup";
+import { faComments as faCommentsRegular } from "@fortawesome/free-regular-svg-icons";
+import { faComments as faCommentsSolid, faPalette, faSave } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faSave } from "@fortawesome/free-solid-svg-icons";
+import React from "react";
 import { DragDropContext } from "react-beautiful-dnd";
-import { withFHIR } from "../state/fhir";
 import { CircleLoader } from "react-spinners";
+import { withFHIR } from "../state/fhir";
+import "./Diagnoses.css";
+import List from "./List";
+import Popup from "./Popup";
+import TitleBar from "./TitleBar";
 
 class DifferentialDiagnosis extends React.Component {
   constructor(props) {
@@ -23,12 +24,16 @@ class DifferentialDiagnosis extends React.Component {
         //        code: 1233,
         //        display: "cancer"
         //     },
-        //     note: ""
+        //     note: "",
+        //     isNoteOpen: false
         // }
       ],
       listB: [],
       deletingRow: null, // [list, index]
       loading: false,
+      showColourPalette: false,
+      showColourPaletteColour: "white",
+      toggleNotesColour: "white"
     };
 
     this.id2List = {
@@ -71,7 +76,7 @@ class DifferentialDiagnosis extends React.Component {
             (c) => c.fullUrl === `${FHIR.iss}/${e.condition.reference}`
           ).resource;
 
-          let list = e.role.text == "Likely" ? newListA : newListB;
+          let list = e.role.text === "Likely" ? newListA : newListB;
           list.splice(e.rank, 0, {
             id: index,
             note: "",
@@ -92,10 +97,11 @@ class DifferentialDiagnosis extends React.Component {
       id: new Date().getTime(),
       snomed: {},
       note: "",
+      isNotesOpen: false
     });
 
-    if (list == this.state.listA) this.setState({ listA: [...list] });
-    else if (list == this.state.listB) this.setState({ listB: [...list] });
+    if (list === this.state.listA) this.setState({ listA: [...list] });
+    else if (list === this.state.listB) this.setState({ listB: [...list] });
     else console.log("Unknown list");
   }
 
@@ -106,8 +112,8 @@ class DifferentialDiagnosis extends React.Component {
       deletingRow: null,
     };
 
-    if (list == this.state.listA) newState.listA = list;
-    else if (list == this.state.listB) newState.listB = list;
+    if (list === this.state.listA) newState.listA = list;
+    else if (list === this.state.listB) newState.listB = list;
     else console.log("Unknown list");
 
     this.setState(newState);
@@ -152,12 +158,12 @@ class DifferentialDiagnosis extends React.Component {
 
     let newState = {};
 
-    if (sourceList == this.state.listA) newState.listA = sourceClone;
-    else if (sourceList == this.state.listB) newState.listB = sourceClone;
+    if (sourceList === this.state.listA) newState.listA = sourceClone;
+    else if (sourceList === this.state.listB) newState.listB = sourceClone;
     else console.log("Uknown List");
 
-    if (destinationList == this.state.listA) newState.listA = destClone;
-    else if (destinationList == this.state.listB) newState.listB = destClone;
+    if (destinationList === this.state.listA) newState.listA = destClone;
+    else if (destinationList === this.state.listB) newState.listB = destClone;
     else console.log("Unkown List");
 
     this.setState(newState);
@@ -189,8 +195,8 @@ class DifferentialDiagnosis extends React.Component {
       const list = this.getList(source.droppableId);
       const items = this.reorder(list, source.index, destination.index);
 
-      if (list == this.state.listA) this.setState({ listA: items });
-      else if (list == this.state.listB) this.setState({ listB: items });
+      if (list === this.state.listA) this.setState({ listA: items });
+      else if (list === this.state.listB) this.setState({ listB: items });
       else console.log("Unknown list");
     } else {
       const result = this.move(
@@ -274,36 +280,79 @@ class DifferentialDiagnosis extends React.Component {
   }
 
   render() {
-    const pageTitleButtons = [
-      <FontAwesomeIcon
-        icon={faSave}
-        size="3x"
-        style={{ cursor: "pointer" }}
-        onClick={this.saveToFHIR}
-      />,
-    ];
 
     if (this.state.loading) {
       return this.renderLoading();
     }
 
+    const areAllCommentsOpen = this.state.listA.every(row => row.isNotesOpen)
+        && this.state.listB.every(row => row.isNotesOpen)
+
+    const pageTitleButtons = [
+      <FontAwesomeIcon
+        key="toggle_comments_button"
+        icon={areAllCommentsOpen ? faCommentsRegular : faCommentsSolid}
+        title={areAllCommentsOpen ? "Hide all notes" : "Show all notes"}
+        onClick={() => this.setState(prevState => ({
+          listA: prevState.listA.map(
+            row => ({ ...row, isNotesOpen: !areAllCommentsOpen })
+          ),
+          listB: prevState.listB.map(
+            row => ({ ...row, isNotesOpen: !areAllCommentsOpen })
+          )
+        }))}
+        size="2x"
+        style={{ cursor: "pointer" }}
+        color={this.state.toggleNotesColour}
+        onMouseOver={() => this.setState({toggleNotesColour: "grey"})}
+        onMouseLeave={() => this.setState({toggleNotesColour: "white"})}
+      />,
+      <FontAwesomeIcon
+        key="toggle_colour_palette_button"
+        icon={faPalette}
+        size="2x"
+        style={{ cursor: "pointer" }}
+        onClick={() => this.setState({showColourPalette: !this.state.showColourPalette})} 
+        color={this.state.showColourPaletteColour}
+        onMouseOver={() => this.setState({showColourPaletteColour: "grey"})}
+        onMouseLeave={() => this.setState({showColourPaletteColour: "white"})}
+      />,
+      // <FontAwesomeIcon
+      //   key="save_button"
+      //   icon={faSave}
+      //   size="2x"
+      //   style={{ cursor: "pointer" }}
+      //   onClick={this.saveToFHIR}
+      // />
+    ];
+
     return (
       <div
-        style={{ height: "100vh", display: "flex", flexDirection: "column" }}
+        onClick={() => {
+          if (this.state.showColourPalette) {
+            this.setState({showColourPalette: false});
+          }
+        }}
+        style={{ height: "100vh", padding: 0, margin: 0, maxHeight: "100vh", width: "100w", maxWidth: "100vw", display: "flex", flexDirection: "column", backgroundColor: "#404040" }}
       >
-        <TitleBar title="Differential Diagnoses" buttons={pageTitleButtons} />
+        <TitleBar title="Differential Diagnoses" buttons={pageTitleButtons} backgroundColor="#343434" />
 
         <div className="listContainer">
           <DragDropContext onDragEnd={this.onDragEnd}>
             <List
-              title={`Likely Diagnoses`}
+              title="Likely Diagnoses"
               colour="#5DAD89"
+              showColourPalette={this.state.showColourPalette}
               droppableId="droppable1"
               rows={this.state.listA}
               addRow={() => this.addRow(this.state.listA)}
-              deleteRow={(index) =>
-                this.setState({ deletingRow: [this.state.listA, index] })
-              }
+              deleteRow={(index) => {
+                if (this.state.listA[index].snomed.code) {
+                  this.setState({ deletingRow: [this.state.listA, index] });
+                } else {
+                  this.deleteRow(this.state.listA, index);
+                }
+              }}
               updateRowNumber={(from, to) =>
                 this.setState({
                   listA: this.reorder(this.state.listA, from, to),
@@ -320,18 +369,27 @@ class DifferentialDiagnosis extends React.Component {
                 row.note = newNote;
                 this.setState({ listA: [...this.state.listA] });
               }}
+              setNotesOpen={(row, isNotesOpen) => {
+                row.isNotesOpen = isNotesOpen;
+                this.setState({ listA: [...this.state.listA] });
+              }}
               isLeft={true}
             />
 
             <List
-              title={`Critical`}
+              title="Need to Know"
               colour="#DA7676"
+              showColourPalette={this.state.showColourPalette}
               droppableId="droppable2"
               rows={this.state.listB}
               addRow={() => this.addRow(this.state.listB)}
-              deleteRow={(index) =>
-                this.setState({ deletingRow: [this.state.listB, index] })
-              }
+              deleteRow={(index) => {
+                if (this.state.listB[index].snomed.code) {
+                  this.setState({ deletingRow: [this.state.listB, index] });
+                } else {
+                  this.deleteRow(this.state.listB, index);
+                }
+              }}
               updateRowNumber={(from, to) =>
                 this.setState({
                   listB: this.reorder(this.state.listB, from, to),
@@ -348,6 +406,10 @@ class DifferentialDiagnosis extends React.Component {
                 row.note = newNote;
                 this.setState({ listB: [...this.state.listB] });
               }}
+              setNotesOpen={(row, isNotesOpen) => {
+                row.isNotesOpen = isNotesOpen;
+                this.setState({ listB: [...this.state.listB] });
+              }}
               isLeft={false}
             />
           </DragDropContext>
@@ -359,43 +421,9 @@ class DifferentialDiagnosis extends React.Component {
             yesCallback={() => this.deleteRow(...this.state.deletingRow)}
             noCallback={() => this.setState({ deletingRow: null })}
           >
-            {this.state.deletingRow[0][this.state.deletingRow[1]].content}
+            {this.state.deletingRow[0][this.state.deletingRow[1]].snomed.display}
           </Popup>
         )}
-
-        {/* {this.state.showNotes && (
-          <Popup
-            title={"Add a comment for " + this.state.showNotes.content}
-            noCallback={() => this.setState({ showNotes: null })}
-            yesCallback={() => {
-              const newList = [...this.state.showNotes.list];
-              const item = newList.find(x => x.id == this.state.showNotes.id);
-              if (item) item.note = this.state.showNotes.note;
-
-              const newState = {
-                showNotes: null,
-              };
-
-              if (this.state.showNotes.list == this.state.listA) 
-                newState.listA = newList;
-              else if (this.state.showNotes.list == this.state.listB)
-                newState.listB = newList;
-              else console.log("Unknown list");
-
-              this.setState(newState);
-            }}
-          >
-            <textarea
-              className="commentBox"
-              value={this.state.showNotes.note}
-              onChange={(e) => {
-                let row = this.state.showNotes;
-                row.note = e.target.value;
-                this.setState({ showNotes: row });
-              }}
-            />
-          </Popup>
-        )} */}
       </div>
     );
   }

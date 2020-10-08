@@ -12,8 +12,6 @@ import EnvService from "../util/getEnv";
 const Home = (props) => {
   const {
     iss,
-    launch,
-    metadata,
     accessToken,
     setAccessToken,
     patient,
@@ -63,7 +61,7 @@ const Home = (props) => {
         grant_type: "authorization_code",
         code: params.code,
         client_id: EnvService.getClientId(),
-        redirect_uri: EnvService.getRedirectUri()
+        redirect_uri: EnvService.getRedirectUri(),
       }),
     })
       .then((res) => res.json())

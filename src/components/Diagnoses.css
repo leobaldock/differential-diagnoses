@@ -13,6 +13,7 @@
     padding: 1em;
     flex-grow: 1;
     align-items: stretch;
+    min-height: 0;
 }
 
 .listContainer .list:nth-child(1) {
@@ -23,16 +24,14 @@
     margin-left: 0.5em;
 }
 
-.list{
+.list {
     flex-grow: 1;
     flex-basis: 0px;
     display: flex;
     flex-direction: column;
-    max-height: 78vh;
-    position: relative;
 }
 
-.listRowContainer{
+.listRowContainer {
     flex-grow: 1;
     display: flex;
     justify-content: space-between;
@@ -42,7 +41,7 @@
     overflow: auto;
 }
 
-.listRow{
+.listRow {
     display: flex;
     align-items: stretch;
     font-size: inherit;
@@ -61,7 +60,7 @@
     border: none;
 }
 
-.listEntry{
+.listEntry {
     display: flex;
     margin: 0 1em;
     flex-grow: 1;
@@ -90,6 +89,7 @@
     padding: 0.5em 1em;
     vertical-align: center;
     height: 1.2em;
+    overflow-y: hidden;
 }
 
 .transferButton{
@@ -105,32 +105,7 @@
     cursor: pointer;
 }
 
-.addRowButton{
-    color: #ffffffA9;
-    text-align: right;
-    position: absolute;
-    bottom: 0px;
-    right: 0px;
-    z-index: 1;
-    width: calc(100%);
-}
-
-.overlay{
-    background: rgba(201,201,201,0.2);
-    position: relative;
-    bottom: 0px;
-    right: 0px;
-    padding: 0.5em;
-    z-index: 2;
-    width: calc(100%-1em);
-}
-
-.addRowButton:hover{
-    color: #ffffff;
-    cursor: pointer;
-}
-
-/* Paleete */
+/* Palette */
 .hue-horizontal{
     border-radius: 10px;
 }
@@ -138,7 +113,7 @@
 
 
 /* TitleBar Styling */
-.titleBar{
+.titleBar {
     display: flex;
     flex-direction: row;
     align-items: center;
@@ -146,7 +121,12 @@
     padding: 1em;
     background-color: #00000060;
     color: white;
-  }
+}
+
+.titleBar h1 {
+    margin: 0.25em;
+    font-size: 1.75em;
+}
 
 .buttonContainer > *{
     margin: 0 0.5em;
@@ -165,6 +145,7 @@
     left: 0;
     backdrop-filter: blur(3px);
     background-color: #00000040;
+    z-index: 10;
 }
 
 .popupContainer {
@@ -178,6 +159,7 @@
    display: flex;
    align-items: center;
    justify-content: center;
+   z-index: 10;
 }
 
 .popup {
