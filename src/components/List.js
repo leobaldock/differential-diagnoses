@@ -28,7 +28,7 @@ export default function List({title, colour, showColourPalette, rows, addRow, de
             backgroundColor: snapshot.isDraggingOver ? "#00000020" : "",
             transition: "background-color 0.2s ease",
             padding: "0.5em",
-            height: "100%"
+            height: "calc(100% - 1em)" // account for padding
         }
     };
 
