@@ -317,13 +317,13 @@ class DifferentialDiagnosis extends React.Component {
         onMouseOver={() => this.setState({showColourPaletteColour: "grey"})}
         onMouseLeave={() => this.setState({showColourPaletteColour: "white"})}
       />,
-      <FontAwesomeIcon
-        key="save_button"
-        icon={faSave}
-        size="2x"
-        style={{ cursor: "pointer" }}
-        onClick={this.saveToFHIR}
-      />
+      // <FontAwesomeIcon
+      //   key="save_button"
+      //   icon={faSave}
+      //   size="2x"
+      //   style={{ cursor: "pointer" }}
+      //   onClick={this.saveToFHIR}
+      // />
     ];
 
     return (
