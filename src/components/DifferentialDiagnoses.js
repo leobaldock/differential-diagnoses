@@ -1,11 +1,12 @@
 import { faComments as faCommentsRegular } from "@fortawesome/free-regular-svg-icons";
-import { faComments as faCommentsSolid, faPalette, faSave } from "@fortawesome/free-solid-svg-icons";
+import { faComments as faCommentsSolid, faDownload, faPalette, faSave } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
 import { DragDropContext } from "react-beautiful-dnd";
 import { CircleLoader } from "react-spinners";
 import { withFHIR } from "../state/fhir";
 import "./Diagnoses.css";
+import FAIButton from "./FAIButton";
 import List from "./List";
 import Popup from "./Popup";
 import TitleBar from "./TitleBar";
@@ -50,6 +51,7 @@ class DifferentialDiagnosis extends React.Component {
     this.move = this.move.bind(this);
     this.manualMove = this.manualMove.bind(this);
     this.saveToFHIR = this.saveToFHIR.bind(this);
+    this.getExportableObject = this.getExportableObject.bind(this);
   }
 
   componentDidUpdate(prevProps) {
@@ -90,6 +92,21 @@ class DifferentialDiagnosis extends React.Component {
         this.setState({ listA: newListA, listB: newListB, loading: false });
       });
     }
+  }
+
+  getExportableObject() {
+    return {
+      "Likely Diagnoses": this.state.listA.map(row => ({
+        "Name": row.snomed.display,
+        "SNOMED Code": row.snomed.code,
+        "Note": row.note
+      })),
+      "Need to Know": this.state.listB.map(row => ({
+        "Name": row.snomed.display,
+        "SNOMED Code": row.snomed.code,
+        "Note": row.note
+      })),
+    };
   }
 
   addRow(list) {
@@ -317,6 +334,11 @@ class DifferentialDiagnosis extends React.Component {
         onMouseOver={() => this.setState({showColourPaletteColour: "grey"})}
         onMouseLeave={() => this.setState({showColourPaletteColour: "white"})}
       />,
+      <FAIButton
+        icon={faDownload}
+        title="Export as text file"
+        onClick={() => downloadObjectAsJson(this.getExportableObject(), "DiagnoSys Export")}
+      />
       // <FontAwesomeIcon
       //   key="save_button"
       //   icon={faSave}
@@ -427,6 +449,16 @@ class DifferentialDiagnosis extends React.Component {
       </div>
     );
   }
+}
+
+function downloadObjectAsJson(exportObj, exportName){
+  var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(exportObj, null, 2));
+  var downloadAnchorNode = document.createElement('a');
+  downloadAnchorNode.setAttribute("href",     dataStr);
+  downloadAnchorNode.setAttribute("download", exportName + ".json");
+  document.body.appendChild(downloadAnchorNode); // required for firefox
+  downloadAnchorNode.click();
+  downloadAnchorNode.remove();
 }
 
 export default withFHIR(DifferentialDiagnosis);
