@@ -98,7 +98,7 @@ class DifferentialDiagnosis extends React.Component {
         "SNOMED Code": row.snomed.code,
         "Note": row.note
       })),
-      "Need to Know": this.state.listB.map(row => ({
+      "Critical": this.state.listB.map(row => ({
         "Name": row.snomed.display,
         "SNOMED Code": row.snomed.code,
         "Note": row.note
@@ -393,7 +393,7 @@ class DifferentialDiagnosis extends React.Component {
             />
 
             <List
-              title="Need to Know"
+              title="Critical"
               colour="#DA7676"
               showColourPalette={this.state.showColourPalette}
               droppableId="droppable2"
