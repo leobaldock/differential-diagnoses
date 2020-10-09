@@ -8,7 +8,7 @@ const search = async (searchTerm) => {
     var searchResults = [];
 
     try {
-        const url = `https://ontoserver.csiro.au/stu3-latest/ValueSet/$expand?url=http://snomed.info/sct?fhir_vs=ecl/%3C%3C64572001&filter=${searchTerm}&count=10`;
+        const url = `https://r4.ontoserver.csiro.au/fhir/ValueSet/$expand?url=http://snomed.info/sct?fhir_vs=ecl/%3C%3C64572001&filter=*${searchTerm}*&count=10`;
         const res = await fetch(url);
         const json = await res.json();
         searchResults = json.expansion.contains;
