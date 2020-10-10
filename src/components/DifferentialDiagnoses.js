@@ -49,6 +49,7 @@ class DifferentialDiagnosis extends React.Component {
     this.manualMove = this.manualMove.bind(this);
     this.saveToFHIR = this.saveToFHIR.bind(this);
     this.getExportableObject = this.getExportableObject.bind(this);
+    this.getMarkDown = this.getMarkDown.bind(this);
   }
 
   componentDidUpdate(prevProps) {
@@ -98,7 +99,7 @@ class DifferentialDiagnosis extends React.Component {
         "SNOMED Code": row.snomed.code,
         "Note": row.note
       })),
-      "Critical": this.state.listB.map(row => ({
+      "Critical Diagnoses": this.state.listB.map(row => ({
         "Name": row.snomed.display,
         "SNOMED Code": row.snomed.code,
         "Note": row.note
@@ -109,6 +110,35 @@ class DifferentialDiagnosis extends React.Component {
         "Schema Version": 1
       }
     };
+  }
+
+  getMarkDown() {
+    const data = this.getExportableObject();
+
+    let result = "";
+
+    // title section
+    result += "# DiagnoSys - *A Differential Diagnosis Tool*\n\n";
+    result += "TODO: add logo image here\n\n\n";
+
+    // critical
+    result += "## Critical Diagnoses\n\n";
+    result += "#| Diagnosis | SNOMED Code | Note\n";
+    result += ":--- | :--- | :--- | :---\n";
+    data["Critical Diagnoses"].forEach((diagnosis, index) => {
+      result += `${index} | ${diagnosis.Name} | ${diagnosis["SNOMED Code"]} | ${diagnosis.Note}\n`;
+    });
+    result += "\n\n";
+
+    // likely
+    result += "## Likely Diagnoses\n\n";
+    result += "#| Diagnosis | SNOMED Code | Note\n";
+    result += ":--- | :--- | :--- | :---\n";
+    data["Likely Diagnoses"].forEach((diagnosis, index) => {
+      result += `${index} | ${diagnosis.Name} | ${diagnosis["SNOMED Code"]} | ${diagnosis.Note}\n`;
+    });
+
+    return result;
   }
 
   addRow(list) {
@@ -332,6 +362,12 @@ class DifferentialDiagnosis extends React.Component {
         icon={faDownload}
         title="Export as text file"
         onClick={() => downloadObjectAsJson(this.getExportableObject(), "DiagnoSys Export")}
+      />,
+      <FAIButton
+        key="md_button"
+        icon={faDownload}
+        title="Export as Markdown"
+        onClick={() => downloadStringAsTextFile(this.getMarkDown(), "DiagnoSys Export.md")}
       />
       // <FontAwesomeIcon
       //   key="save_button"
@@ -447,9 +483,19 @@ class DifferentialDiagnosis extends React.Component {
 
 function downloadObjectAsJson(exportObj, exportName){
   var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(exportObj, null, 2));
+  doDownload(dataStr, exportName + ".json");
+}
+
+function downloadStringAsTextFile(string, fileName){
+  var dataString = "data:text/plain;charset=utf-8," + encodeURIComponent(string);
+  doDownload(dataString, fileName);
+ 
+}
+
+function doDownload(dataString, fileName) {
   var downloadAnchorNode = document.createElement('a');
-  downloadAnchorNode.setAttribute("href",     dataStr);
-  downloadAnchorNode.setAttribute("download", exportName + ".json");
+  downloadAnchorNode.setAttribute("href",     dataString);
+  downloadAnchorNode.setAttribute("download", fileName);
   document.body.appendChild(downloadAnchorNode); // required for firefox
   downloadAnchorNode.click();
   downloadAnchorNode.remove();
