@@ -1,5 +1,6 @@
 import { faComments as faCommentsRegular } from "@fortawesome/free-regular-svg-icons";
-import { faComments as faCommentsSolid, faDownload, faPalette, faSave } from "@fortawesome/free-solid-svg-icons";
+import { faMarkdown, faJsSquare } from "@fortawesome/free-brands-svg-icons";
+import { faComments as faCommentsSolid, faDownload, faPalette, faSave} from "@fortawesome/free-solid-svg-icons";
 import React from "react";
 import { DragDropContext } from "react-beautiful-dnd";
 import { CircleLoader } from "react-spinners";
@@ -9,6 +10,8 @@ import FAIButton from "./FAIButton";
 import List from "./List";
 import Popup from "./Popup";
 import TitleBar from "./TitleBar";
+import Sidebar from "react-sidebar";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 class DifferentialDiagnosis extends React.Component {
   constructor(props) {
@@ -32,6 +35,7 @@ class DifferentialDiagnosis extends React.Component {
       deletingRow: null, // [list, index]
       loading: false,
       showColourPalette: false,
+      showSideBar: false
     };
 
     this.id2List = {
@@ -50,6 +54,7 @@ class DifferentialDiagnosis extends React.Component {
     this.saveToFHIR = this.saveToFHIR.bind(this);
     this.getExportableObject = this.getExportableObject.bind(this);
     this.getMarkDown = this.getMarkDown.bind(this);
+    this.getMenuContent = this.getMenuContent.bind(this);
   }
 
   componentDidUpdate(prevProps) {
@@ -320,6 +325,56 @@ class DifferentialDiagnosis extends React.Component {
     );
   }
 
+  getMenuContent() {
+    let buttons = [];
+    switch (this.state.showSideBar) {
+      case "export" :
+        buttons = [
+          {
+            name: "Export as JSON",
+            content: (
+              <FontAwesomeIcon
+                color="black"
+                size="2x"
+                icon={faJsSquare}
+              />
+            ),
+            onClick: () => {
+              downloadObjectAsJson(this.getExportableObject(), "DiagnoSys Export");
+              this.setState({showSideBar: false});
+            }
+          },
+          {
+            name: "Export as Markdown",
+            content: (
+              <FontAwesomeIcon
+                color="black"
+                icon={faMarkdown}
+                size="2x"
+              />
+            ),
+            onClick: () => {
+              downloadStringAsTextFile(this.getMarkDown(), "DiagnoSys Export.md");
+              this.setState({showSideBar: false});
+            }
+          }
+        ];
+        break;
+      // case "other menu type":
+    }
+
+    return (
+      <div className="sidebar">
+        {buttons.map(button => 
+          <div className="sidebarItem" key={button.name} onClick={button.onClick}>
+            <div className="sidebarItemIcon">{button.content}</div>
+            <p>{button.name}</p>
+          </div>
+        )}
+      </div>
+    );
+  }
+
   renderLoading() {
     return (
       <div className="loading">
@@ -360,14 +415,8 @@ class DifferentialDiagnosis extends React.Component {
       <FAIButton
         key="export_button"
         icon={faDownload}
-        title="Export as text file"
-        onClick={() => downloadObjectAsJson(this.getExportableObject(), "DiagnoSys Export")}
-      />,
-      <FAIButton
-        key="md_button"
-        icon={faDownload}
-        title="Export as Markdown"
-        onClick={() => downloadStringAsTextFile(this.getMarkDown(), "DiagnoSys Export.md")}
+        title="Export"
+        onClick={() => this.setState({showSideBar: "export"})}
       />
       // <FontAwesomeIcon
       //   key="save_button"
@@ -379,104 +428,113 @@ class DifferentialDiagnosis extends React.Component {
     ];
 
     return (
-      <div
-        onClick={() => {
-          if (this.state.showColourPalette) {
-            this.setState({showColourPalette: false});
-          }
-        }}
-        style={{ height: "100vh", padding: 0, margin: 0, maxHeight: "100vh", width: "100w", maxWidth: "100vw", display: "flex", flexDirection: "column", backgroundColor: "#404040" }}
-      >
-        <TitleBar title="Differential Diagnoses" buttons={pageTitleButtons} backgroundColor="#343434" />
-
-        <div className="listContainer">
-          <DragDropContext onDragEnd={this.onDragEnd}>
-            <List
-              title="Likely Diagnoses"
-              colour="#5DAD89"
-              showColourPalette={this.state.showColourPalette}
-              droppableId="droppable1"
-              rows={this.state.listA}
-              addRow={() => this.addRow(this.state.listA)}
-              deleteRow={(index) => {
-                if (this.state.listA[index].snomed.code) {
-                  this.setState({ deletingRow: [this.state.listA, index] });
-                } else {
-                  this.deleteRow(this.state.listA, index);
-                }
-              }}
-              updateRowNumber={(from, to) =>
-                this.setState({
-                  listA: this.reorder(this.state.listA, from, to),
-                })
+      <Sidebar
+        sidebar={this.getMenuContent()}
+        open={this.state.showSideBar}
+        onSetOpen={open => this.setState({showSideBar: open})}
+        styles={{ sidebar: { background: "white" } }}
+        touch={false}
+        pullRight={true}
+        >
+          <div
+            onClick={() => {
+              if (this.state.showColourPalette) {
+                this.setState({showColourPalette: false});
               }
-              transfer={(index) =>
-                this.manualMove(this.state.listA, this.state.listB, index, 0)
-              }
-              setSnomed={(row, newSnomed) => {
-                row.snomed = newSnomed;
-                this.setState({ listA: [...this.state.listA] });
-              }}
-              setNote={(row, newNote) => {
-                row.note = newNote;
-                this.setState({ listA: [...this.state.listA] });
-              }}
-              setNotesOpen={(row, isNotesOpen) => {
-                row.isNotesOpen = isNotesOpen;
-                this.setState({ listA: [...this.state.listA] });
-              }}
-              isLeft={true}
-            />
-
-            <List
-              title="Critical"
-              colour="#DA7676"
-              showColourPalette={this.state.showColourPalette}
-              droppableId="droppable2"
-              rows={this.state.listB}
-              addRow={() => this.addRow(this.state.listB)}
-              deleteRow={(index) => {
-                if (this.state.listB[index].snomed.code) {
-                  this.setState({ deletingRow: [this.state.listB, index] });
-                } else {
-                  this.deleteRow(this.state.listB, index);
-                }
-              }}
-              updateRowNumber={(from, to) =>
-                this.setState({
-                  listB: this.reorder(this.state.listB, from, to),
-                })
-              }
-              transfer={(index) =>
-                this.manualMove(this.state.listB, this.state.listA, index, 0)
-              }
-              setSnomed={(row, newSnomed) => {
-                row.snomed = newSnomed;
-                this.setState({ listB: [...this.state.listB] });
-              }}
-              setNote={(row, newNote) => {
-                row.note = newNote;
-                this.setState({ listB: [...this.state.listB] });
-              }}
-              setNotesOpen={(row, isNotesOpen) => {
-                row.isNotesOpen = isNotesOpen;
-                this.setState({ listB: [...this.state.listB] });
-              }}
-              isLeft={false}
-            />
-          </DragDropContext>
-        </div>
-
-        {this.state.deletingRow && (
-          <Popup
-            title="Are you sure you want to delete this diagnosis?"
-            yesCallback={() => this.deleteRow(...this.state.deletingRow)}
-            noCallback={() => this.setState({ deletingRow: null })}
+            }}
+            style={{ height: "100vh", padding: 0, margin: 0, maxHeight: "100vh", width: "100w", maxWidth: "100vw", display: "flex", flexDirection: "column", backgroundColor: "#404040" }}
           >
-            {this.state.deletingRow[0][this.state.deletingRow[1]].snomed.display}
-          </Popup>
-        )}
-      </div>
+            <TitleBar title="Differential Diagnoses" buttons={pageTitleButtons} backgroundColor="#343434" />
+
+            <div className="listContainer">
+              <DragDropContext onDragEnd={this.onDragEnd}>
+                <List
+                  title="Likely Diagnoses"
+                  colour="#5DAD89"
+                  showColourPalette={this.state.showColourPalette}
+                  droppableId="droppable1"
+                  rows={this.state.listA}
+                  addRow={() => this.addRow(this.state.listA)}
+                  deleteRow={(index) => {
+                    if (this.state.listA[index].snomed.code) {
+                      this.setState({ deletingRow: [this.state.listA, index] });
+                    } else {
+                      this.deleteRow(this.state.listA, index);
+                    }
+                  }}
+                  updateRowNumber={(from, to) =>
+                    this.setState({
+                      listA: this.reorder(this.state.listA, from, to),
+                    })
+                  }
+                  transfer={(index) =>
+                    this.manualMove(this.state.listA, this.state.listB, index, 0)
+                  }
+                  setSnomed={(row, newSnomed) => {
+                    row.snomed = newSnomed;
+                    this.setState({ listA: [...this.state.listA] });
+                  }}
+                  setNote={(row, newNote) => {
+                    row.note = newNote;
+                    this.setState({ listA: [...this.state.listA] });
+                  }}
+                  setNotesOpen={(row, isNotesOpen) => {
+                    row.isNotesOpen = isNotesOpen;
+                    this.setState({ listA: [...this.state.listA] });
+                  }}
+                  isLeft={true}
+                />
+
+                <List
+                  title="Critical"
+                  colour="#DA7676"
+                  showColourPalette={this.state.showColourPalette}
+                  droppableId="droppable2"
+                  rows={this.state.listB}
+                  addRow={() => this.addRow(this.state.listB)}
+                  deleteRow={(index) => {
+                    if (this.state.listB[index].snomed.code) {
+                      this.setState({ deletingRow: [this.state.listB, index] });
+                    } else {
+                      this.deleteRow(this.state.listB, index);
+                    }
+                  }}
+                  updateRowNumber={(from, to) =>
+                    this.setState({
+                      listB: this.reorder(this.state.listB, from, to),
+                    })
+                  }
+                  transfer={(index) =>
+                    this.manualMove(this.state.listB, this.state.listA, index, 0)
+                  }
+                  setSnomed={(row, newSnomed) => {
+                    row.snomed = newSnomed;
+                    this.setState({ listB: [...this.state.listB] });
+                  }}
+                  setNote={(row, newNote) => {
+                    row.note = newNote;
+                    this.setState({ listB: [...this.state.listB] });
+                  }}
+                  setNotesOpen={(row, isNotesOpen) => {
+                    row.isNotesOpen = isNotesOpen;
+                    this.setState({ listB: [...this.state.listB] });
+                  }}
+                  isLeft={false}
+                />
+              </DragDropContext>
+            </div>
+
+            {this.state.deletingRow && (
+              <Popup
+                title="Are you sure you want to delete this diagnosis?"
+                yesCallback={() => this.deleteRow(...this.state.deletingRow)}
+                noCallback={() => this.setState({ deletingRow: null })}
+              >
+                {this.state.deletingRow[0][this.state.deletingRow[1]].snomed.display}
+              </Popup>
+            )}
+          </div>
+        </Sidebar>
     );
   }
 }
