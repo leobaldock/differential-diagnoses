@@ -23,7 +23,7 @@ export default function List({title, colour, showColourPalette, rows, addRow, de
     const [listColour, setListColour] = useLocalStorage(`${isLeft ? "left" : "right"}_list_colour`, colour);
 
     const getListStyle = (snapshot) => {
-        console.log(snapshot);
+        // console.log(snapshot);
         return {
             backgroundColor: snapshot.isDraggingOver ? "#00000020" : "",
             transition: "background-color 0.2s ease",

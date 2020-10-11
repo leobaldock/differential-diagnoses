@@ -1,6 +1,6 @@
 import { faComments as faCommentsRegular } from "@fortawesome/free-regular-svg-icons";
 import { faMarkdown, faJsSquare } from "@fortawesome/free-brands-svg-icons";
-import { faComments as faCommentsSolid, faDownload, faPalette, faSave} from "@fortawesome/free-solid-svg-icons";
+import { faComments as faCommentsSolid, faDownload, faPalette, faSave, faFilePdf} from "@fortawesome/free-solid-svg-icons";
 import React from "react";
 import { DragDropContext } from "react-beautiful-dnd";
 import { CircleLoader } from "react-spinners";
@@ -12,6 +12,7 @@ import Popup from "./Popup";
 import TitleBar from "./TitleBar";
 import Sidebar from "react-sidebar";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import $ from "jquery";
 
 class DifferentialDiagnosis extends React.Component {
   constructor(props) {
@@ -357,7 +358,21 @@ class DifferentialDiagnosis extends React.Component {
               downloadStringAsTextFile(this.getMarkDown(), "DiagnoSys Export.md");
               this.setState({showSideBar: false});
             }
-          }
+          },
+          {
+            name: "Export as Pdf",
+            content: (
+              <FontAwesomeIcon
+                color="black"
+                icon={faFilePdf}
+                size="2x"
+              />
+            ),
+            onClick: () => {
+              downloadMDAsPDF(this.getMarkDown(), "DiagnoSys Export.pdf");
+              this.setState({showSideBar: false});
+            }
+          },
         ];
         break;
       // case "other menu type":
@@ -430,7 +445,7 @@ class DifferentialDiagnosis extends React.Component {
     return (
       <Sidebar
         sidebar={this.getMenuContent()}
-        open={this.state.showSideBar}
+        open={!!this.state.showSideBar}
         onSetOpen={open => this.setState({showSideBar: open})}
         styles={{ sidebar: { background: "white" } }}
         touch={false}
@@ -537,6 +552,42 @@ class DifferentialDiagnosis extends React.Component {
         </Sidebar>
     );
   }
+}
+
+async function downloadMDAsPDF(markdown, fileName) {
+  const formData  = new FormData();
+  const blob = new Blob([markdown], {type: "text/markdown"});
+  const file = new File([blob], "abc.md");
+
+  formData.append("input_files[]", file);
+  formData.append("from", "markdown");
+  formData.append("to", "pdf");
+
+  console.log('sending');
+  // const res = await fetch("http://c.docverter.com/convert");
+  // $.ajax({
+  //   url: "http://c.docverter.com/convert",
+  //   data: formData,
+  //   processData: false,
+  //   type: 'POST',
+  //   success: function ( data ) {
+  //       alert('success');
+  //   },
+  //   error: function (data) {
+  //     alert('fail');
+  //     console.log(data);
+  //   }
+  // });
+
+  const xhr = new XMLHttpRequest();
+  xhr.open( 'POST', "http://c.docverter.com/convert", true );
+  xhr.onload = function () {
+    // do something to response
+    console.log(this.responseText);
+}
+  xhr.send( formData );
+
+  
 }
 
 function downloadObjectAsJson(exportObj, exportName){
