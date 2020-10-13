@@ -6,7 +6,7 @@ import {
   faPalette,
   faSave,
   faFilePdf,
-  faSpinner
+  faSpinner,
 } from "@fortawesome/free-solid-svg-icons";
 import React from "react";
 import { DragDropContext } from "react-beautiful-dnd";
@@ -411,23 +411,14 @@ class DifferentialDiagnosis extends React.Component {
   renderSave() {
     const { saving } = this.state;
     if (saving) {
-      return (
-        <FontAwesomeIcon
-          key="save_button"
-          icon={faSpinner}
-          size="3x"
-          style={{ cursor: "pointer" }}
-          spin
-        />
-      );
+      return <FAIButton key="save_button" icon={faSpinner} spin />;
     }
 
     return (
-      <FontAwesomeIcon
+      <FAIButton
         key="save_button"
         icon={faSave}
-        size="3x"
-        style={{ cursor: "pointer" }}
+        title={"Save to FHIR server"}
         onClick={this.saveToFHIR}
       />
     );
@@ -463,7 +454,6 @@ class DifferentialDiagnosis extends React.Component {
       <FAIButton
         key="toggle_colour_palette_button"
         icon={faPalette}
-        size="3x"
         style={{ cursor: "pointer" }}
         onClick={() =>
           this.setState({ showColourPalette: !this.state.showColourPalette })
@@ -487,13 +477,6 @@ class DifferentialDiagnosis extends React.Component {
         title="Export"
         onClick={() => this.setState({ showSideBar: "export" })}
       />,
-      // <FontAwesomeIcon
-      //   key="save_button"
-      //   icon={faSave}
-      //   size="2x"
-      //   style={{ cursor: "pointer" }}
-      //   onClick={this.saveToFHIR}
-      // />
     ];
 
     return (
