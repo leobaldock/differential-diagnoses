@@ -1,6 +1,13 @@
 import { faComments as faCommentsRegular } from "@fortawesome/free-regular-svg-icons";
 import { faMarkdown, faJsSquare } from "@fortawesome/free-brands-svg-icons";
-import { faComments as faCommentsSolid, faDownload, faPalette, faSave, faFilePdf} from "@fortawesome/free-solid-svg-icons";
+import {
+  faComments as faCommentsSolid,
+  faDownload,
+  faPalette,
+  faSave,
+  faFilePdf,
+  faSpinner
+} from "@fortawesome/free-solid-svg-icons";
 import React from "react";
 import { DragDropContext } from "react-beautiful-dnd";
 import { CircleLoader } from "react-spinners";
@@ -12,16 +19,6 @@ import Popup from "./Popup";
 import TitleBar from "./TitleBar";
 import Sidebar from "react-sidebar";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faSave,
-  faPalette,
-  faComments as faCommentsSolid,
-  faSpinner,
-} from "@fortawesome/free-solid-svg-icons";
-import { faComments as faCommentsRegular } from "@fortawesome/free-regular-svg-icons";
-import { DragDropContext } from "react-beautiful-dnd";
-import { withFHIR } from "../state/fhir";
-import { CircleLoader } from "react-spinners";
 
 class DifferentialDiagnosis extends React.Component {
   constructor(props) {
@@ -43,12 +40,12 @@ class DifferentialDiagnosis extends React.Component {
       ],
       listB: [],
       deletingRow: null, // [list, index]
-      loading: true,
+      loading: false,
       saving: false,
       showColourPalette: false,
       showColourPaletteColour: "white",
       toggleNotesColour: "white",
-      showSideBar: false
+      showSideBar: false,
     };
 
     this.id2List = {
@@ -112,21 +109,21 @@ class DifferentialDiagnosis extends React.Component {
 
   getExportableObject() {
     return {
-      "Likely Diagnoses": this.state.listA.map(row => ({
-        "Name": row.snomed.display,
+      "Likely Diagnoses": this.state.listA.map((row) => ({
+        Name: row.snomed.display,
         "SNOMED Code": row.snomed.code,
-        "Note": row.note
+        Note: row.note,
       })),
-      "Critical Diagnoses": this.state.listB.map(row => ({
-        "Name": row.snomed.display,
+      "Critical Diagnoses": this.state.listB.map((row) => ({
+        Name: row.snomed.display,
         "SNOMED Code": row.snomed.code,
-        "Note": row.note
+        Note: row.note,
       })),
-      "Metadata": {
+      Metadata: {
         // bump this every time you change the format of the export.
         // that we we can handle imports properly.
-        "Schema Version": 1
-      }
+        "Schema Version": 1,
+      },
     };
   }
 
@@ -344,49 +341,43 @@ class DifferentialDiagnosis extends React.Component {
   getMenuContent() {
     let buttons = [];
     switch (this.state.showSideBar) {
-      case "export" :
+      case "export":
         buttons = [
           {
             name: "Export as JSON",
             content: (
-              <FontAwesomeIcon
-                color="black"
-                size="2x"
-                icon={faJsSquare}
-              />
+              <FontAwesomeIcon color="black" size="2x" icon={faJsSquare} />
             ),
             onClick: () => {
-              downloadObjectAsJson(this.getExportableObject(), "DiagnoSys Export");
-              this.setState({showSideBar: false});
-            }
+              downloadObjectAsJson(
+                this.getExportableObject(),
+                "DiagnoSys Export"
+              );
+              this.setState({ showSideBar: false });
+            },
           },
           {
             name: "Export as Markdown",
             content: (
-              <FontAwesomeIcon
-                color="black"
-                icon={faMarkdown}
-                size="2x"
-              />
+              <FontAwesomeIcon color="black" icon={faMarkdown} size="2x" />
             ),
             onClick: () => {
-              downloadStringAsTextFile(this.getMarkDown(), "DiagnoSys Export.md");
-              this.setState({showSideBar: false});
-            }
+              downloadStringAsTextFile(
+                this.getMarkDown(),
+                "DiagnoSys Export.md"
+              );
+              this.setState({ showSideBar: false });
+            },
           },
           {
             name: "Export as Pdf",
             content: (
-              <FontAwesomeIcon
-                color="black"
-                icon={faFilePdf}
-                size="2x"
-              />
+              <FontAwesomeIcon color="black" icon={faFilePdf} size="2x" />
             ),
             onClick: () => {
               downloadMDAsPDF(this.getMarkDown(), "DiagnoSys Export.pdf");
-              this.setState({showSideBar: false});
-            }
+              this.setState({ showSideBar: false });
+            },
           },
         ];
         break;
@@ -395,12 +386,16 @@ class DifferentialDiagnosis extends React.Component {
 
     return (
       <div className="sidebar">
-        {buttons.map(button => 
-          <div className="sidebarItem" key={button.name} onClick={button.onClick}>
+        {buttons.map((button) => (
+          <div
+            className="sidebarItem"
+            key={button.name}
+            onClick={button.onClick}
+          >
             <div className="sidebarItemIcon">{button.content}</div>
             <p>{button.name}</p>
           </div>
-        )}
+        ))}
       </div>
     );
   }
@@ -438,26 +433,32 @@ class DifferentialDiagnosis extends React.Component {
     );
   }
 
+  render() {
     if (this.state.loading) {
       return this.renderLoading();
     }
 
-    const areAllCommentsOpen = this.state.listA.every(row => row.isNotesOpen)
-        && this.state.listB.every(row => row.isNotesOpen)
+    const areAllCommentsOpen =
+      this.state.listA.every((row) => row.isNotesOpen) &&
+      this.state.listB.every((row) => row.isNotesOpen);
 
     const pageTitleButtons = [
       <FAIButton
         key="toggle_comments_button"
         icon={areAllCommentsOpen ? faCommentsRegular : faCommentsSolid}
         title={areAllCommentsOpen ? "Hide all notes" : "Show all notes"}
-        onClick={() => this.setState(prevState => ({
-          listA: prevState.listA.map(
-            row => ({ ...row, isNotesOpen: !areAllCommentsOpen })
-          ),
-          listB: prevState.listB.map(
-            row => ({ ...row, isNotesOpen: !areAllCommentsOpen })
-          )
-        }))}
+        onClick={() =>
+          this.setState((prevState) => ({
+            listA: prevState.listA.map((row) => ({
+              ...row,
+              isNotesOpen: !areAllCommentsOpen,
+            })),
+            listB: prevState.listB.map((row) => ({
+              ...row,
+              isNotesOpen: !areAllCommentsOpen,
+            })),
+          }))
+        }
       />,
       <FAIButton
         key="toggle_colour_palette_button"
@@ -470,16 +471,22 @@ class DifferentialDiagnosis extends React.Component {
         color={this.state.showColourPaletteColour}
         onMouseOver={() => this.setState({ showColourPaletteColour: "grey" })}
         onMouseLeave={() => this.setState({ showColourPaletteColour: "white" })}
-        title={this.state.showColourPalette ? "Hide colour editor" : "Show colour editor"}
-        onClick={() => this.setState({showColourPalette: !this.state.showColourPalette})} 
+        title={
+          this.state.showColourPalette
+            ? "Hide colour editor"
+            : "Show colour editor"
+        }
+        onClick={() =>
+          this.setState({ showColourPalette: !this.state.showColourPalette })
+        }
       />,
       this.renderSave(),
       <FAIButton
         key="export_button"
         icon={faDownload}
         title="Export"
-        onClick={() => this.setState({showSideBar: "export"})}
-      />
+        onClick={() => this.setState({ showSideBar: "export" })}
+      />,
       // <FontAwesomeIcon
       //   key="save_button"
       //   icon={faSave}
@@ -493,124 +500,141 @@ class DifferentialDiagnosis extends React.Component {
       <Sidebar
         sidebar={this.getMenuContent()}
         open={!!this.state.showSideBar}
-        onSetOpen={open => this.setState({showSideBar: open})}
+        onSetOpen={(open) => this.setState({ showSideBar: open })}
         styles={{ sidebar: { background: "white" } }}
         touch={false}
         pullRight={true}
+      >
+        <div
+          onClick={() => {
+            if (this.state.showColourPalette) {
+              this.setState({ showColourPalette: false });
+            }
+          }}
+          style={{
+            height: "100vh",
+            padding: 0,
+            margin: 0,
+            maxHeight: "100vh",
+            width: "100w",
+            maxWidth: "100vw",
+            display: "flex",
+            flexDirection: "column",
+            backgroundColor: "#404040",
+          }}
         >
-          <div
-            onClick={() => {
-              if (this.state.showColourPalette) {
-                this.setState({showColourPalette: false});
-              }
-            }}
-            style={{ height: "100vh", padding: 0, margin: 0, maxHeight: "100vh", width: "100w", maxWidth: "100vw", display: "flex", flexDirection: "column", backgroundColor: "#404040" }}
-          >
-            <TitleBar title="Differential Diagnoses" buttons={pageTitleButtons} backgroundColor="#343434" />
+          <TitleBar
+            title="Differential Diagnoses"
+            buttons={pageTitleButtons}
+            backgroundColor="#343434"
+          />
 
-            <div className="listContainer">
-              <DragDropContext onDragEnd={this.onDragEnd}>
-                <List
-                  title="Likely Diagnoses"
-                  colour="#5DAD89"
-                  showColourPalette={this.state.showColourPalette}
-                  droppableId="droppable1"
-                  rows={this.state.listA}
-                  addRow={() => this.addRow(this.state.listA)}
-                  deleteRow={(index) => {
-                    if (this.state.listA[index].snomed.code) {
-                      this.setState({ deletingRow: [this.state.listA, index] });
-                    } else {
-                      this.deleteRow(this.state.listA, index);
-                    }
-                  }}
-                  updateRowNumber={(from, to) =>
-                    this.setState({
-                      listA: this.reorder(this.state.listA, from, to),
-                    })
+          <div className="listContainer">
+            <DragDropContext onDragEnd={this.onDragEnd}>
+              <List
+                title="Likely Diagnoses"
+                colour="#5DAD89"
+                showColourPalette={this.state.showColourPalette}
+                droppableId="droppable1"
+                rows={this.state.listA}
+                addRow={() => this.addRow(this.state.listA)}
+                deleteRow={(index) => {
+                  if (this.state.listA[index].snomed.code) {
+                    this.setState({ deletingRow: [this.state.listA, index] });
+                  } else {
+                    this.deleteRow(this.state.listA, index);
                   }
-                  transfer={(index) =>
-                    this.manualMove(this.state.listA, this.state.listB, index, 0)
-                  }
-                  setSnomed={(row, newSnomed) => {
-                    row.snomed = newSnomed;
-                    this.setState({ listA: [...this.state.listA] });
-                  }}
-                  setNote={(row, newNote) => {
-                    row.note = newNote;
-                    this.setState({ listA: [...this.state.listA] });
-                  }}
-                  setNotesOpen={(row, isNotesOpen) => {
-                    row.isNotesOpen = isNotesOpen;
-                    this.setState({ listA: [...this.state.listA] });
-                  }}
-                  isLeft={true}
-                />
+                }}
+                updateRowNumber={(from, to) =>
+                  this.setState({
+                    listA: this.reorder(this.state.listA, from, to),
+                  })
+                }
+                transfer={(index) =>
+                  this.manualMove(this.state.listA, this.state.listB, index, 0)
+                }
+                setSnomed={(row, newSnomed) => {
+                  row.snomed = newSnomed;
+                  this.setState({ listA: [...this.state.listA] });
+                }}
+                setNote={(row, newNote) => {
+                  row.note = newNote;
+                  this.setState({ listA: [...this.state.listA] });
+                }}
+                setNotesOpen={(row, isNotesOpen) => {
+                  row.isNotesOpen = isNotesOpen;
+                  this.setState({ listA: [...this.state.listA] });
+                }}
+                isLeft={true}
+              />
 
-                <List
-                  title="Critical"
-                  colour="#DA7676"
-                  showColourPalette={this.state.showColourPalette}
-                  droppableId="droppable2"
-                  rows={this.state.listB}
-                  addRow={() => this.addRow(this.state.listB)}
-                  deleteRow={(index) => {
-                    if (this.state.listB[index].snomed.code) {
-                      this.setState({ deletingRow: [this.state.listB, index] });
-                    } else {
-                      this.deleteRow(this.state.listB, index);
-                    }
-                  }}
-                  updateRowNumber={(from, to) =>
-                    this.setState({
-                      listB: this.reorder(this.state.listB, from, to),
-                    })
+              <List
+                title="Critical"
+                colour="#DA7676"
+                showColourPalette={this.state.showColourPalette}
+                droppableId="droppable2"
+                rows={this.state.listB}
+                addRow={() => this.addRow(this.state.listB)}
+                deleteRow={(index) => {
+                  if (this.state.listB[index].snomed.code) {
+                    this.setState({ deletingRow: [this.state.listB, index] });
+                  } else {
+                    this.deleteRow(this.state.listB, index);
                   }
-                  transfer={(index) =>
-                    this.manualMove(this.state.listB, this.state.listA, index, 0)
-                  }
-                  setSnomed={(row, newSnomed) => {
-                    row.snomed = newSnomed;
-                    this.setState({ listB: [...this.state.listB] });
-                  }}
-                  setNote={(row, newNote) => {
-                    row.note = newNote;
-                    this.setState({ listB: [...this.state.listB] });
-                  }}
-                  setNotesOpen={(row, isNotesOpen) => {
-                    row.isNotesOpen = isNotesOpen;
-                    this.setState({ listB: [...this.state.listB] });
-                  }}
-                  isLeft={false}
-                />
-              </DragDropContext>
-            </div>
-
-            {this.state.deletingRow && (
-              <Popup
-                title="Are you sure you want to delete this diagnosis?"
-                yesCallback={() => this.deleteRow(...this.state.deletingRow)}
-                noCallback={() => this.setState({ deletingRow: null })}
-              >
-                {this.state.deletingRow[0][this.state.deletingRow[1]].snomed.display}
-              </Popup>
-            )}
+                }}
+                updateRowNumber={(from, to) =>
+                  this.setState({
+                    listB: this.reorder(this.state.listB, from, to),
+                  })
+                }
+                transfer={(index) =>
+                  this.manualMove(this.state.listB, this.state.listA, index, 0)
+                }
+                setSnomed={(row, newSnomed) => {
+                  row.snomed = newSnomed;
+                  this.setState({ listB: [...this.state.listB] });
+                }}
+                setNote={(row, newNote) => {
+                  row.note = newNote;
+                  this.setState({ listB: [...this.state.listB] });
+                }}
+                setNotesOpen={(row, isNotesOpen) => {
+                  row.isNotesOpen = isNotesOpen;
+                  this.setState({ listB: [...this.state.listB] });
+                }}
+                isLeft={false}
+              />
+            </DragDropContext>
           </div>
-        </Sidebar>
+
+          {this.state.deletingRow && (
+            <Popup
+              title="Are you sure you want to delete this diagnosis?"
+              yesCallback={() => this.deleteRow(...this.state.deletingRow)}
+              noCallback={() => this.setState({ deletingRow: null })}
+            >
+              {
+                this.state.deletingRow[0][this.state.deletingRow[1]].snomed
+                  .display
+              }
+            </Popup>
+          )}
+        </div>
+      </Sidebar>
     );
   }
 }
 
 async function downloadMDAsPDF(markdown, fileName) {
-  const formData  = new FormData();
-  const blob = new Blob([markdown], {type: "text/markdown"});
+  const formData = new FormData();
+  const blob = new Blob([markdown], { type: "text/markdown" });
   const file = new File([blob], "abc.md");
 
   formData.append("input_files[]", file);
   formData.append("from", "markdown");
   formData.append("to", "pdf");
 
-  console.log('sending');
+  console.log("sending");
   // const res = await fetch("http://c.docverter.com/convert");
   // $.ajax({
   //   url: "http://c.docverter.com/convert",
@@ -627,30 +651,30 @@ async function downloadMDAsPDF(markdown, fileName) {
   // });
 
   const xhr = new XMLHttpRequest();
-  xhr.open( 'POST', "http://c.docverter.com/convert", true );
+  xhr.open("POST", "http://c.docverter.com/convert", true);
   xhr.onload = function () {
     // do something to response
     console.log(this.responseText);
-}
-  xhr.send( formData );
-
-  
+  };
+  xhr.send(formData);
 }
 
-function downloadObjectAsJson(exportObj, exportName){
-  var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(exportObj, null, 2));
+function downloadObjectAsJson(exportObj, exportName) {
+  var dataStr =
+    "data:text/json;charset=utf-8," +
+    encodeURIComponent(JSON.stringify(exportObj, null, 2));
   doDownload(dataStr, exportName + ".json");
 }
 
-function downloadStringAsTextFile(string, fileName){
-  var dataString = "data:text/plain;charset=utf-8," + encodeURIComponent(string);
+function downloadStringAsTextFile(string, fileName) {
+  var dataString =
+    "data:text/plain;charset=utf-8," + encodeURIComponent(string);
   doDownload(dataString, fileName);
- 
 }
 
 function doDownload(dataString, fileName) {
-  var downloadAnchorNode = document.createElement('a');
-  downloadAnchorNode.setAttribute("href",     dataString);
+  var downloadAnchorNode = document.createElement("a");
+  downloadAnchorNode.setAttribute("href", dataString);
   downloadAnchorNode.setAttribute("download", fileName);
   document.body.appendChild(downloadAnchorNode); // required for firefox
   downloadAnchorNode.click();
