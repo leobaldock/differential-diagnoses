@@ -4,7 +4,12 @@ import List from "./List";
 import "./Diagnoses.css";
 import Popup from "./Popup";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faSave, faPalette, faComments as faCommentsSolid } from "@fortawesome/free-solid-svg-icons";
+import {
+  faSave,
+  faPalette,
+  faComments as faCommentsSolid,
+  faSpinner,
+} from "@fortawesome/free-solid-svg-icons";
 import { faComments as faCommentsRegular } from "@fortawesome/free-regular-svg-icons";
 import { DragDropContext } from "react-beautiful-dnd";
 import { withFHIR } from "../state/fhir";
@@ -31,9 +36,10 @@ class DifferentialDiagnosis extends React.Component {
       listB: [],
       deletingRow: null, // [list, index]
       loading: true,
+      saving: false,
       showColourPalette: false,
       showColourPaletteColour: "white",
-      toggleNotesColour: "white"
+      toggleNotesColour: "white",
     };
 
     this.id2List = {
@@ -97,7 +103,7 @@ class DifferentialDiagnosis extends React.Component {
       id: new Date().getTime(),
       snomed: {},
       note: "",
-      isNotesOpen: false
+      isNotesOpen: false,
     });
 
     if (list === this.state.listA) this.setState({ listA: [...list] });
@@ -216,6 +222,8 @@ class DifferentialDiagnosis extends React.Component {
   async saveToFHIR() {
     const { FHIR } = this.props;
 
+    this.setState({ saving: true });
+
     const likelyDiagnoses = await this.createDiagnosisList(
       this.state.listA,
       "Likely"
@@ -240,6 +248,7 @@ class DifferentialDiagnosis extends React.Component {
     );
 
     FHIR.setEpisodeOfCare(episodeOfCare);
+    this.setState({ saving: false });
   }
 
   async createDiagnosisList(list, role) {
@@ -279,40 +288,21 @@ class DifferentialDiagnosis extends React.Component {
     );
   }
 
-  render() {
+  renderSave() {
+    const { saving } = this.state;
+    if (saving) {
+      return (
+        <FontAwesomeIcon
+          key="save_button"
+          icon={faSpinner}
+          size="3x"
+          style={{ cursor: "pointer" }}
+          spin
+        />
+      );
+    }
 
-    const areAllCommentsOpen = this.state.listA.every(row => row.isNotesOpen)
-        && this.state.listB.every(row => row.isNotesOpen)
-
-    const pageTitleButtons = [
-      <FontAwesomeIcon
-        key="toggle_comments_button"
-        icon={areAllCommentsOpen ? faCommentsRegular : faCommentsSolid}
-        title={areAllCommentsOpen ? "Hide all notes" : "Show all notes"}
-        onClick={() => this.setState(prevState => ({
-          listA: prevState.listA.map(
-            row => ({ ...row, isNotesOpen: !areAllCommentsOpen })
-          ),
-          listB: prevState.listB.map(
-            row => ({ ...row, isNotesOpen: !areAllCommentsOpen })
-          )
-        }))}
-        size="3x"
-        style={{ cursor: "pointer" }}
-        color={this.state.toggleNotesColour}
-        onMouseOver={() => this.setState({toggleNotesColour: "grey"})}
-        onMouseLeave={() => this.setState({toggleNotesColour: "white"})}
-      />,
-      <FontAwesomeIcon
-        key="toggle_colour_palette_button"
-        icon={faPalette}
-        size="3x"
-        style={{ cursor: "pointer" }}
-        onClick={() => this.setState({showColourPalette: !this.state.showColourPalette})} 
-        color={this.state.showColourPaletteColour}
-        onMouseOver={() => this.setState({showColourPaletteColour: "grey"})}
-        onMouseLeave={() => this.setState({showColourPaletteColour: "white"})}
-      />,
+    return (
       <FontAwesomeIcon
         key="save_button"
         icon={faSave}
@@ -320,6 +310,50 @@ class DifferentialDiagnosis extends React.Component {
         style={{ cursor: "pointer" }}
         onClick={this.saveToFHIR}
       />
+    );
+  }
+
+  render() {
+    const areAllCommentsOpen =
+      this.state.listA.every((row) => row.isNotesOpen) &&
+      this.state.listB.every((row) => row.isNotesOpen);
+
+    const pageTitleButtons = [
+      <FontAwesomeIcon
+        key="toggle_comments_button"
+        icon={areAllCommentsOpen ? faCommentsRegular : faCommentsSolid}
+        title={areAllCommentsOpen ? "Hide all notes" : "Show all notes"}
+        onClick={() =>
+          this.setState((prevState) => ({
+            listA: prevState.listA.map((row) => ({
+              ...row,
+              isNotesOpen: !areAllCommentsOpen,
+            })),
+            listB: prevState.listB.map((row) => ({
+              ...row,
+              isNotesOpen: !areAllCommentsOpen,
+            })),
+          }))
+        }
+        size="3x"
+        style={{ cursor: "pointer" }}
+        color={this.state.toggleNotesColour}
+        onMouseOver={() => this.setState({ toggleNotesColour: "grey" })}
+        onMouseLeave={() => this.setState({ toggleNotesColour: "white" })}
+      />,
+      <FontAwesomeIcon
+        key="toggle_colour_palette_button"
+        icon={faPalette}
+        size="3x"
+        style={{ cursor: "pointer" }}
+        onClick={() =>
+          this.setState({ showColourPalette: !this.state.showColourPalette })
+        }
+        color={this.state.showColourPaletteColour}
+        onMouseOver={() => this.setState({ showColourPaletteColour: "grey" })}
+        onMouseLeave={() => this.setState({ showColourPaletteColour: "white" })}
+      />,
+      this.renderSave(),
     ];
 
     if (this.state.loading) {
@@ -330,12 +364,25 @@ class DifferentialDiagnosis extends React.Component {
       <div
         onClick={() => {
           if (this.state.showColourPalette) {
-            this.setState({showColourPalette: false});
+            this.setState({ showColourPalette: false });
           }
         }}
-        style={{ height: "100vh", padding: 0, margin: 0, maxHeight: "100vh", width: "100w", maxWidth: "100vw", display: "flex", flexDirection: "column" }}
+        style={{
+          height: "100vh",
+          padding: 0,
+          margin: 0,
+          maxHeight: "100vh",
+          width: "100w",
+          maxWidth: "100vw",
+          display: "flex",
+          flexDirection: "column",
+        }}
       >
-        <TitleBar title="Differential Diagnoses" buttons={pageTitleButtons} backgroundColor="#343434" />
+        <TitleBar
+          title="Differential Diagnoses"
+          buttons={pageTitleButtons}
+          backgroundColor="#343434"
+        />
 
         <div className="listContainer">
           <DragDropContext onDragEnd={this.onDragEnd}>
