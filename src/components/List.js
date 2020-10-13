@@ -13,18 +13,22 @@ import {
     faAngleDoubleLeft,
     faComment,
     faCommentMedical,
-    faTintSlash
+    faTintSlash,
+    faPlusSquare
 } from '@fortawesome/free-solid-svg-icons'
+import FAIButton from "./FAIButton";
 
 
 export default function List({title, colour, showColourPalette, rows, addRow, deleteRow, updateRowNumber, droppableId, transfer, isLeft, setSnomed, setNote, setNotesOpen}){
     const [listColour, setListColour] = useLocalStorage(`${isLeft ? "left" : "right"}_list_colour`, colour);
-    const [resetColourColour, setResetColourColour] = useState("white")
 
     const getListStyle = (snapshot) => {
         // console.log(snapshot);
         return {
+            backgroundColor: snapshot.isDraggingOver ? "#00000020" : "",
+            transition: "background-color 0.2s ease",
             padding: "0.5em",
+            height: "calc(100% - 1em)" // account for padding
         }
     };
 
@@ -38,21 +42,21 @@ export default function List({title, colour, showColourPalette, rows, addRow, de
         }
     };
 
-    const listButtons = [];
+    const listButtons = [
+        <FAIButton
+            key="add_new_diag_button"
+            icon={faPlusSquare}
+            title="Add New Diagnosis"
+            onClick={addRow}
+        />
+    ];
     if (showColourPalette && listColour !== colour) {
-        listButtons.push((
-            <FontAwesomeIcon
+        listButtons.unshift((
+            <FAIButton
+                key="reset_colour_button"
                 icon={faTintSlash}
-                size="2x"
                 title="Reset Colour"
-                style={{ cursor: "pointer" }}
-                color={resetColourColour}
-                onMouseEnter={() => setResetColourColour("grey")}
-                onMouseLeave={() => setResetColourColour("white")}
-                onClick={() => {
-                    setListColour(colour);
-                    setResetColourColour("white");
-                }}
+                onClick={() => setListColour(colour)}
             />
         ));
     }
@@ -123,12 +127,7 @@ export default function List({title, colour, showColourPalette, rows, addRow, de
                             </div>
                         )}
                     </Droppable>
-                </div>
-                <div className="addRowButton" style={{background: listColour}}>
-                    <div className="overlay">
-                        <span onClick={addRow}> + ADD NEW DIAGNOSIS </span>
-                    </div>
-                </div>      
+                </div>    
             </div>
         </div>
     )
@@ -138,8 +137,6 @@ export default function List({title, colour, showColourPalette, rows, addRow, de
 function ListRow({listColour, note, content, isNotesOpen, rowNumber, deleteRow, updateRowNumber, transfer, setNote, isLeft, setSnomed, setNotesOpen}) {
 
     const [inputNum, setInputNum] = useState(rowNumber);
-    const [commentColour, setCommentColour] = useState("grey");
-    const [deleteColour, setDeleteColour] = useState("grey");
 
     const handleKeyDown = (e) => {
         if (e.key === "Enter") {
@@ -156,7 +153,7 @@ function ListRow({listColour, note, content, isNotesOpen, rowNumber, deleteRow, 
     return (
         <div className="listRow">
             {!isLeft &&
-                <div style={{marginRight: "1em"}}className="transferButton" onClick={() => transfer(rowNumber - 1)}>
+                <div style={{marginRight: "1em"}} className="transferButton" onClick={() => transfer(rowNumber - 1)}>
                     <FontAwesomeIcon icon={faAngleDoubleLeft} />
                 </div>
             }
@@ -177,23 +174,22 @@ function ListRow({listColour, note, content, isNotesOpen, rowNumber, deleteRow, 
                         <SnomedSearch content={content} callback={setSnomed} listColour={listColour} />
                     </span>
                     <div>
-                        <FontAwesomeIcon
-                            style={{cursor: "pointer", transition: "0.1s ease"}}
-                            color={commentColour}
+                        <FAIButton
+                            color="grey"
+                            hoverColor={listColour}
+                            size="1x"
                             title={isNotesOpen ? "Hide Note" : "Show note"}
                             icon={note ? faComment : faCommentMedical}
                             onClick={() => setNotesOpen(!isNotesOpen)}
-                            onMouseOver={() => setCommentColour(listColour)}
-                            onMouseLeave={() => setCommentColour("grey")}
                         />
-                        <FontAwesomeIcon
-                            onClick={() => deleteRow(rowNumber - 1)}
+                        <FAIButton
+                            color="grey"
+                            hoverColor={listColour}
+                            size="1x"
                             title="Delete Diagnosis"
                             style={{cursor: "pointer", paddingLeft:"0.5em"}}
-                            color={deleteColour}
                             icon={faMinusCircle}
-                            onMouseOver={() => setDeleteColour(listColour)}
-                            onMouseLeave={() => setDeleteColour("grey")}
+                            onClick={() => deleteRow(rowNumber - 1)}
                         />
                     </div>
                 </div>
@@ -201,6 +197,7 @@ function ListRow({listColour, note, content, isNotesOpen, rowNumber, deleteRow, 
                     <TextareaAutosize onChange={e => setNote(e.target.value)} value={note} />
                 </div>}
             </div>
+
             {isLeft &&
                 <div className="transferButton" onClick={() => transfer(rowNumber - 1)}>
                     <FontAwesomeIcon icon={faAngleDoubleRight} />
