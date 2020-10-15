@@ -596,7 +596,7 @@ class DifferentialDiagnosis extends React.Component {
           }}
         >
           <TitleBar
-            title="Differential Diagnoses"
+            showLogo
             buttons={pageTitleButtons}
             backgroundColor="#343434"
           />
