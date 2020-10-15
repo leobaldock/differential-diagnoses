@@ -107,6 +107,9 @@ class DifferentialDiagnosis extends React.Component {
     }
   }
 
+  /**
+   * Formats each list to support formatting them as student-interpretable notes 
+   */
   getExportableObject() {
     return {
       "Likely Diagnoses": this.state.listA.map((row) => ({
@@ -127,6 +130,10 @@ class DifferentialDiagnosis extends React.Component {
     };
   }
 
+  /**
+   * Creates a Markdown representation of the current DifferentialDiagnosis
+   * lists.
+   */
   getMarkDown() {
     const data = this.getExportableObject();
 
@@ -156,6 +163,14 @@ class DifferentialDiagnosis extends React.Component {
     return result;
   }
 
+  /**
+   * Adds a row, using the current time as identifier, into a supplied List.
+   * 
+   * If the supplied list is not one of the two instantiated lists, the
+   * function will print an error.
+   * 
+   * @param {*} list an array representing a diagnosis list
+   */
   addRow(list) {
     list.push({
       id: new Date().getTime(),
@@ -169,6 +184,15 @@ class DifferentialDiagnosis extends React.Component {
     else console.log("Unknown list");
   }
 
+ /**
+  *  Deletes the row at a specified index within a specified list array.
+  * 
+  *  If the supplied list is not one of the two instantiated lists, the
+  *  function will print an error.
+  * 
+  * @param {*} list an array representing a diagnosis list.
+  * @param {*} index the specified index in the list to remove
+  */
   deleteRow(list, index) {
     list.splice(index, 1);
 
@@ -183,19 +207,33 @@ class DifferentialDiagnosis extends React.Component {
     this.setState(newState);
   }
 
-  updateRowNumber(from, to) {
+  /**
+   * Moves a list item into a specified index. If the specified index is
+   * out-of-bounds, it will move into the minimum or maximum position. For 
+   * instance, calling the function to move an item to position -1 will instead
+   * move it into the 0th index.
+   * @param {*} startIndex the original index of the array item
+   * @param {*} endIndex the desired index of the array item
+   */
+  updateRowNumber(startIndex, endIndex) {
     if (this.state.rows.length < 2) return;
     // Go to top of list
-    if (to < 0) to = 0;
+    if (endIndex < 0) endIndex = 0;
     // Go to bottom of list
-    if (to >= this.state.rows.length) to = this.state.rows.length - 1;
+    if (endIndex >= this.state.rows.length) endIndex = this.state.rows.length - 1;
 
-    const result = this.reorder(this.state.rows, from, to);
+    const result = this.reorder(this.state.rows, startIndex, endIndex);
     this.setState({
       rows: result,
     });
   }
 
+  /**
+   * Facilitates reordering the list when an item has its row number updated
+   * @param {*} list an array representing a diagnosis list
+   * @param {*} startIndex the original index of the array item
+   * @param {*} endIndex the desired index of the array item
+   */
   reorder(list, startIndex, endIndex) {
     const result = Array.from(list);
     if (list.length < 2) return result;
@@ -209,10 +247,23 @@ class DifferentialDiagnosis extends React.Component {
     return result;
   }
 
+  /**
+   * Returns the name of the list tied to the supplied identifier
+   * @param {*} id id of a 'droppable' container
+   */
   getList(id) {
     return this.state[this.id2List[id]];
   }
 
+  /**
+   * Moves a list item into its opposing list as a specified index, used to
+   * facilitate the existence of a manual 'transfer' button. Acts as a clickable
+   * alternative to mouse drag-and-drop of list items.
+   * @param {*} sourceList the current parent list of the list item
+   * @param {*} destinationList the desired parent list of the list item
+   * @param {*} sourceIndex the original index of the list item
+   * @param {*} destinationIndex the desired index of the array item
+   */
   manualMove(sourceList, destinationList, sourceIndex, destinationIndex) {
     const sourceClone = Array.from(sourceList);
     const destClone = Array.from(destinationList);
@@ -224,7 +275,7 @@ class DifferentialDiagnosis extends React.Component {
 
     if (sourceList === this.state.listA) newState.listA = sourceClone;
     else if (sourceList === this.state.listB) newState.listB = sourceClone;
-    else console.log("Uknown List");
+    else console.log("Unknown List");
 
     if (destinationList === this.state.listA) newState.listA = destClone;
     else if (destinationList === this.state.listB) newState.listB = destClone;
@@ -233,9 +284,18 @@ class DifferentialDiagnosis extends React.Component {
     this.setState(newState);
   }
 
-  move(source, destination, droppableSource, droppableDestination) {
-    const sourceClone = Array.from(source);
-    const destClone = Array.from(destination);
+  /**
+   * Facilitates  moving a list item to a different list once a drag-and-drop
+   * interaction has occurred.
+   * 
+   * @param {*} sourceList the current parent list of the list item
+   * @param {*} destinationList the desired parent list of the list item
+   * @param {*} droppableSource  react-beautiful-dnd <Droppable/> sourcecontainer
+   * @param {*} droppableDestination react-beautiful-dnd <Droppable/> destination container
+   */
+  move(sourceList, destinationList, droppableSource, droppableDestination) {
+    const sourceClone = Array.from(sourceList);
+    const destClone = Array.from(destinationList);
     const [removed] = sourceClone.splice(droppableSource.index, 1);
 
     destClone.splice(droppableDestination.index, 0, removed);
@@ -247,6 +307,14 @@ class DifferentialDiagnosis extends React.Component {
     return result;
   }
 
+  /**
+   * Used by react-beautiful-dnd to facilitate the drag-and-drop interaction.
+   * Prevents dropping an item out of a valid container, and calls appropriate
+   * functions to rearrange list contents depending on the dropped location.
+   * 
+   * @param {*} result representation of dragged items source container and
+   * destination container
+   */
   onDragEnd(result) {
     const { source, destination } = result;
 
@@ -277,6 +345,10 @@ class DifferentialDiagnosis extends React.Component {
     }
   }
 
+  /**
+   * An asynchronous function to create the appropriate FHIR resource
+   * representation of the Differential Diagnosis lists.
+   */
   async saveToFHIR() {
     const { FHIR } = this.props;
 
@@ -309,6 +381,13 @@ class DifferentialDiagnosis extends React.Component {
     this.setState({ saving: false });
   }
 
+  /**
+   * Creates the appropriate FHIR Condition resources for each item in a
+   * supplied list
+   * @param {*} list an array representing a diagnosis list
+   * @param {*} role used to identify the 'Likely' or 'Need to Rule Out' 
+   * diagnosis list
+   */
   async createDiagnosisList(list, role) {
     const { FHIR } = this.props;
     return await Promise.all(
@@ -338,6 +417,10 @@ class DifferentialDiagnosis extends React.Component {
     );
   }
 
+  /**
+   * Defines an expandable sidebar to show export options for a student to save
+   * their diagnosis list for future reference
+   */
   getMenuContent() {
     let buttons = [];
     switch (this.state.showSideBar) {
@@ -400,6 +483,9 @@ class DifferentialDiagnosis extends React.Component {
     );
   }
 
+  /**
+   * Adds a loading spinner
+   */
   renderLoading() {
     return (
       <div className="loading">
@@ -408,6 +494,9 @@ class DifferentialDiagnosis extends React.Component {
     );
   }
 
+  /**
+   * Adds a loading spinner for save button
+   */
   renderSave() {
     const { saving } = this.state;
     if (saving) {
@@ -608,6 +697,11 @@ class DifferentialDiagnosis extends React.Component {
   }
 }
 
+/**
+ * TODO: @Luke Wilson
+ * @param {*} markdown 
+ * @param {*} fileName 
+ */
 async function downloadMDAsPDF(markdown, fileName) {
   const formData = new FormData();
   const blob = new Blob([markdown], { type: "text/markdown" });
@@ -642,6 +736,11 @@ async function downloadMDAsPDF(markdown, fileName) {
   xhr.send(formData);
 }
 
+/**
+ * Converts Differential Diagnosis Lists to exportable JSON representation
+ * @param {*} exportObj exportable representation of lists
+ * @param {*} exportName desired name of exported JSON file
+ */
 function downloadObjectAsJson(exportObj, exportName) {
   var dataStr =
     "data:text/json;charset=utf-8," +
@@ -649,12 +748,22 @@ function downloadObjectAsJson(exportObj, exportName) {
   doDownload(dataStr, exportName + ".json");
 }
 
+/**
+ * TODO: @Luke Wilson
+ * @param {*} string 
+ * @param {*} fileName 
+ */
 function downloadStringAsTextFile(string, fileName) {
   var dataString =
     "data:text/plain;charset=utf-8," + encodeURIComponent(string);
   doDownload(dataString, fileName);
 }
 
+/**
+ * TODO: @Luke Wilson
+ * @param {*} dataString 
+ * @param {*} fileName 
+ */
 function doDownload(dataString, fileName) {
   var downloadAnchorNode = document.createElement("a");
   downloadAnchorNode.setAttribute("href", dataString);

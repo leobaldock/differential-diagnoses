@@ -18,12 +18,35 @@ import {
 } from '@fortawesome/free-solid-svg-icons'
 import FAIButton from "./FAIButton";
 
-
+/**
+ * Represents the array structure of a differential diagnosis list as an easy
+ * to use visual component.
+ * 
+ * Each list supports the user changing its background colour, adding rows,
+ * deleting rows, rearranging list items (through drag-and-drop, editing the
+ * list number, or using a 'transfer' button) and writing row-specific notes
+ * that persist between rearranges
+ * 
+ * 
+ * @param {*} title the title of the list
+ * @param {*} colour the background colour of the list
+ * @param {*} rows the array of list items
+ * @param {*} addRow callback function to add a row to this list
+ * @param {*} deleteRow callback function to delete a row from this list
+ * @param {*} updateRowNumber callback function to update row number on rearrange
+ * @param {*} droppableId react-beautiful-dnd identifier for this list container
+ * @param {*} transfer callback function to transfer items between lists
+ * @param {*} isLeft boolean to change button positions between left/right lists
+ * @param {*} setSnomed callback function to create a new snomed object for a row
+ * @param {*} setNote callback function to create a new note  for a row
+ * @param {*} setNotesOpen boolean toggle to expand/collapse a user row note
+ */
 export default function List({title, colour, showColourPalette, rows, addRow, deleteRow, updateRowNumber, droppableId, transfer, isLeft, setSnomed, setNote, setNotesOpen}){
+    
+    //Use local storage to maintain list colour on page refresh
     const [listColour, setListColour] = useLocalStorage(`${isLeft ? "left" : "right"}_list_colour`, colour);
-
+    //set custom list styling for react-beautiful-dnd
     const getListStyle = (snapshot) => {
-        // console.log(snapshot);
         return {
             backgroundColor: snapshot.isDraggingOver ? "#00000020" : "",
             transition: "background-color 0.2s ease",
@@ -31,7 +54,7 @@ export default function List({title, colour, showColourPalette, rows, addRow, de
             height: "calc(100% - 1em)" // account for padding
         }
     };
-
+    //set custom list item styling for react-beautiful-dnd
     const getItemStyle = (draggableStyle, snapshot) => {
         // console.log(snapshot);
         return {
@@ -42,6 +65,7 @@ export default function List({title, colour, showColourPalette, rows, addRow, de
         }
     };
 
+    //define buttons to appear in TitleBar
     const listButtons = [
         <FAIButton
             key="add_new_diag_button"
@@ -133,21 +157,40 @@ export default function List({title, colour, showColourPalette, rows, addRow, de
     )
 }
 
-
-function ListRow({listColour, note, content, isNotesOpen, rowNumber, deleteRow, updateRowNumber, transfer, setNote, isLeft, setSnomed, setNotesOpen}) {
-
+/**
+ * Represents a list item (single diagnosis) from the array structure as a
+ * row in the List parent component
+ * 
+ * Each listRow supports the user changing its deletion, rearranging list items
+ * (through drag-and-drop, editing the list number, or using a 'transfer'
+ * button) and writing row-specific notes that persist between rearranges.
+ * 
+ * @param {*} listColour the background colour of the list
+ * @param {*} note the user inputted note
+ * @param {*} content the user inputted diagnosis
+ * @param {*} rowNumber the index of this row in the parent list
+ * @param {*} deleteRow callback function to delete a row from this list
+ * @param {*} updateRowNumber callback function to update row number on rearrange
+ * @param {*} transfer callback function to transfer items between lists
+ * @param {*} isLeft boolean to change button positions between left/right lists
+ * @param {*} setSnomed callback function to create a new snomed object for a row
+ * @param {*} setNote callback function to create a new note  for a row
+ * @param {*} isNotesOpen boolean state of comment visibility
+ * @param {*} setNotesOpen boolean toggle to expand/collapse a user row note
+ */
+function ListRow({listColour, note, content, rowNumber, deleteRow, updateRowNumber, transfer, isLeft, setSnomed, setNote, isNotesOpen, setNotesOpen}) {
+    //state hook for user changing row number via editing the rows number
     const [inputNum, setInputNum] = useState(rowNumber);
-
+    //event handlers for updating row number on input on an 'Enter' key
     const handleKeyDown = (e) => {
         if (e.key === "Enter") {
             updateRowNumber(rowNumber - 1, inputNum - 1);
         }
     }
-
+    //event handlers for updating row number on input on losing user focus
     const handleBlur = () => {
         updateRowNumber(rowNumber - 1, inputNum - 1);
     }
-
     useEffect(() => setInputNum(rowNumber), [rowNumber]);
 
     return (
