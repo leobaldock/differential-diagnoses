@@ -1,0 +1,21 @@
+* {
+    font-family: "Segoe UI","Roboto","Oxygen","Ubuntu","Cantarell","Fira Sans","Droid Sans","Helvetica Neue",sans-serif;
+}
+
+table {
+    border-collapse: collapse;
+    width: 100%;
+  }
+
+td {
+    border-bottom: 1px solid #ddd;
+}
+
+th, td {
+    padding: 1em;
+}
+
+th {
+    background-color: #51247A;
+    color: white;
+  }
