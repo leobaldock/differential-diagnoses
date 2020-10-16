@@ -7,6 +7,8 @@ import {
   faSave,
   faFilePdf,
   faSpinner,
+  faExpandAlt,
+  faCompressAlt
 } from "@fortawesome/free-solid-svg-icons";
 import React from "react";
 import { DragDropContext } from "react-beautiful-dnd";
@@ -43,8 +45,6 @@ class DifferentialDiagnosis extends React.Component {
       loading: false,
       saving: false,
       showColourPalette: false,
-      showColourPaletteColour: "white",
-      toggleNotesColour: "white",
       showSideBar: false,
     };
 
@@ -510,6 +510,8 @@ class DifferentialDiagnosis extends React.Component {
           },
         ];
         break;
+      default:
+        buttons = [];
       // case "other menu type":
     }
 
@@ -563,6 +565,8 @@ class DifferentialDiagnosis extends React.Component {
     if (this.state.loading) {
       return this.renderLoading();
     }
+    
+    const isFullScreen = !!document.fullscreenElement;
 
     const areAllCommentsOpen =
       this.state.listA.every((row) => row.isNotesOpen) &&
@@ -589,20 +593,12 @@ class DifferentialDiagnosis extends React.Component {
       <FAIButton
         key="toggle_colour_palette_button"
         icon={faPalette}
-        style={{ cursor: "pointer" }}
         onClick={() =>
           this.setState({ showColourPalette: !this.state.showColourPalette })
         }
-        color={this.state.showColourPaletteColour}
-        onMouseOver={() => this.setState({ showColourPaletteColour: "grey" })}
-        onMouseLeave={() => this.setState({ showColourPaletteColour: "white" })}
-        title={
-          this.state.showColourPalette
+        title={this.state.showColourPalette
             ? "Hide colour editor"
             : "Show colour editor"
-        }
-        onClick={() =>
-          this.setState({ showColourPalette: !this.state.showColourPalette })
         }
       />,
       this.renderSave(),
@@ -612,6 +608,15 @@ class DifferentialDiagnosis extends React.Component {
         title="Export"
         onClick={() => this.setState({ showSideBar: "export" })}
       />,
+      <FAIButton
+        key="toggle_fullscreen_button"
+        icon={isFullScreen ? faCompressAlt : faExpandAlt}
+        onClick={() => {
+          toggleFullScreen();
+          setTimeout(() => this.forceUpdate(), 100);
+        }}
+        title={isFullScreen ? "Collapse" : "Expand"}
+      />
     ];
 
     return (
@@ -813,4 +818,25 @@ function doDownload(dataString, fileName) {
   downloadAnchorNode.remove();
 }
 
+function toggleFullScreen() {
+
+  const isFullScreen = !!document.fullscreenElement;
+  const element = isFullScreen ? document : document.documentElement;
+
+  let requestMethod = null;
+  if (isFullScreen) {
+    // collapse
+    requestMethod = document.exitFullscreen || document.webkitExitFullscreen
+      || document.mozCancelFullScreen || document.msExitFullscreen;
+  } else {
+    // go full screen
+    requestMethod = element.requestFullScreen|| element.webkitRequestFullScreen
+      || element.mozRequestFullScreen || element.msRequestFullScreen;
+  }
+
+  if (requestMethod) requestMethod.call(element);
+}
+
 export default withFHIR(DifferentialDiagnosis);
+
+
