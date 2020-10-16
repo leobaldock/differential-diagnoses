@@ -32,6 +32,7 @@ const Home = (props) => {
     if (iss && params.code) {
       fetchAccessToken();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [params, iss]);
 
   /* Runs when access token changes */
@@ -40,6 +41,7 @@ const Home = (props) => {
     if (tokenIsValid() && contextData != null) {
       fetchPatient(contextData.patient);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [accessToken, contextData]);
 
   /* Runs when patient resource changes */
@@ -48,6 +50,7 @@ const Home = (props) => {
     if (tokenIsValid() && patient) {
       fetchCreateEpisodeOfCare();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [patient]);
 
   const fetchAccessToken = () => {

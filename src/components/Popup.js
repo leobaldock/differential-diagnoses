@@ -1,5 +1,13 @@
 import React from 'react';
 
+/**
+ * Component to support customisable popups. Used to confirm user intent on row
+ * deletion. 
+ * @param {*} title title of popup
+ * @param {*} children contents of popup
+ * @param {*} noCallback callback function to trigger on 'NO' button 
+ * @param {*} yesCallback callback function to trigger on 'YES' button 
+ */
 export default function Popup({title, children, noCallback, yesCallback}) {
     return (
         <>

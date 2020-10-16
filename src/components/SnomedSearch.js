@@ -1,14 +1,18 @@
-
 import React from 'react';
 import AsyncSelect from 'react-select/async';
 import { createRef } from 'react';
 
+/**
+ * Queries the SNOMED server to return correct SNOMED code and label for a
+ * user inputted diagnosis search term
+ * @param {*} searchTerm user-inputted diagnosis search term
+ */
 const search = async (searchTerm) => {
 
     var searchResults = [];
 
     try {
-        const url = `https://ontoserver.csiro.au/stu3-latest/ValueSet/$expand?url=http://snomed.info/sct?fhir_vs=ecl/%3C%3C64572001&filter=${searchTerm}&count=10`;
+        const url = `https://r4.ontoserver.csiro.au/fhir/ValueSet/$expand?url=http://snomed.info/sct?fhir_vs=ecl/%3C%3C64572001&filter=*${searchTerm}*&count=10`;
         const res = await fetch(url);
         const json = await res.json();
         searchResults = json.expansion.contains;
@@ -24,6 +28,15 @@ const search = async (searchTerm) => {
     return result;
 }
 
+/**
+ *  The SnomedSearch is the text component present within a ListRow, upon gaining
+ *  user focus it will expand in the middle of the screen and prompt for user
+ *  input. After the user begins to type, SNOMED results are depicted in a
+ *  dropdown.
+ * 
+ *  Upon selecting an option, the SNOMED label and code will be saved into the
+ *  parent component
+ */
 export default class SnomedSearch extends React.Component {
     constructor(props) {
         super(props);
