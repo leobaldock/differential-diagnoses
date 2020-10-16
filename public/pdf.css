@@ -2,6 +2,13 @@
     font-family: "Segoe UI","Roboto","Oxygen","Ubuntu","Cantarell","Fira Sans","Droid Sans","Helvetica Neue",sans-serif;
 }
 
+h1 {
+    font-weight: normal;
+    text-align: center;
+    font-size: 0.8rem;
+    margin-top: 1.5em;
+}
+
 table {
     border-collapse: collapse;
     width: 100%;
@@ -16,6 +23,11 @@ th, td {
 }
 
 th {
-    background-color: #51247A;
+    background-color: #303030;
     color: white;
-  }
+}
+
+img {
+    width: 80%;
+    margin-left: 10%;
+}
