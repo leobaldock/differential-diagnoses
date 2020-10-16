@@ -1,8 +1,12 @@
-
 import React from 'react';
 import AsyncSelect from 'react-select/async';
 import { createRef } from 'react';
 
+/**
+ * Queries the SNOMED server to return correct SNOMED code and label for a
+ * user inputted diagnosis search term
+ * @param {*} searchTerm user-inputted diagnosis search term
+ */
 const search = async (searchTerm) => {
 
     var searchResults = [];
@@ -24,6 +28,15 @@ const search = async (searchTerm) => {
     return result;
 }
 
+/**
+ *  The SnomedSearch is the text component present within a ListRow, upon gaining
+ *  user focus it will expand in the middle of the screen and prompt for user
+ *  input. After the user begins to type, SNOMED results are depicted in a
+ *  dropdown.
+ * 
+ *  Upon selecting an option, the SNOMED label and code will be saved into the
+ *  parent component
+ */
 export default class SnomedSearch extends React.Component {
     constructor(props) {
         super(props);
