@@ -30,7 +30,7 @@ const EnvService = {
         console.log(`Current env is ${targetEnv}`);
 
         if (targetEnv === "Release") {
-            return "ac6e16b5-1e7d-4488-9aa2-f3b1ccc7a881";
+            return "diagnosys";
         }
 
         return "3a71fccc-f4b1-4e5a-a8ed-a54c3d8a36b8";
