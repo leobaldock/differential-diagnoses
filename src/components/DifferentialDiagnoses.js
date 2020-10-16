@@ -188,7 +188,7 @@ class DifferentialDiagnosis extends React.Component {
     const input = [
       { img: [{
         title: "DiagnoSys",
-        source: "https://helpx.adobe.com/content/dam/help/en/stock/how-to/visual-reverse-image-search/jcr_content/main-pars/image/visual-reverse-image-search-v2_intro.jpg"
+        source: "http://localhost:3000/diagnosys_logo.jpg"
       }]}, 
       { h1: "DiagnoSys - *A Differential Diagnosis Tool*"},
       { h2: "Critical Diagnoses" },
