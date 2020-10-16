@@ -5,14 +5,13 @@ import React from "react";
 import { DragDropContext } from "react-beautiful-dnd";
 import { CircleLoader } from "react-spinners";
 import { withFHIR } from "../state/fhir";
-import "./Diagnoses.css";
+import "../css/diagnoses.css";
 import FAIButton from "./FAIButton";
 import List from "./List";
 import Popup from "./Popup";
 import TitleBar from "./TitleBar";
 import Sidebar from "react-sidebar";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import $ from "jquery";
 
 class DifferentialDiagnosis extends React.Component {
   constructor(props) {
@@ -55,6 +54,7 @@ class DifferentialDiagnosis extends React.Component {
     this.saveToFHIR = this.saveToFHIR.bind(this);
     this.getExportableObject = this.getExportableObject.bind(this);
     this.getMarkDown = this.getMarkDown.bind(this);
+    this.getMarkDown2 = this.getMarkDown2.bind(this);
     this.getMenuContent = this.getMenuContent.bind(this);
   }
 
@@ -103,12 +103,12 @@ class DifferentialDiagnosis extends React.Component {
       "Likely Diagnoses": this.state.listA.map(row => ({
         "Name": row.snomed.display,
         "SNOMED Code": row.snomed.code,
-        "Note": row.note
+        "Note": row.note ? row.note : "..."
       })),
       "Critical Diagnoses": this.state.listB.map(row => ({
         "Name": row.snomed.display,
         "SNOMED Code": row.snomed.code,
-        "Note": row.note
+        "Note": row.note ? row.note : "..."
       })),
       "Metadata": {
         // bump this every time you change the format of the export.
@@ -145,6 +145,50 @@ class DifferentialDiagnosis extends React.Component {
     });
 
     return result;
+  }
+
+  getMarkDown2() {
+    const data = this.getExportableObject();
+
+    // fill blank rows if needed
+    if (data["Critical Diagnoses"].length === 0) {
+      data["Critical Diagnoses"].push({
+        Name: "No Diagnoses Listed",
+        "SNOMED Code": "",
+        Note: ""
+      });
+    }
+    if (data["Likely Diagnoses"].length === 0) {
+      data["Likely Diagnoses"].push({
+        Name: "No Diagnoses Listed",
+        "SNOMED Code": "",
+        Note: ""
+      });
+    }
+
+    
+
+    const json2md = require("json2md");
+
+    const input = [
+      { h1: "DiagnoSys - *A Differential Diagnosis Tool*"},
+      { h2: "Critical Diagnoses" },
+      { table: {
+        headers: [ "#", "Diagnosis", "SNOMED Code", "Note"],
+        rows: data["Critical Diagnoses"].map((diagnosis, index) => ([
+          index + 1, diagnosis.Name, diagnosis["SNOMED Code"], diagnosis.Note
+        ]))
+      }},
+      { h2: "Likely Diagnoses" },
+      { table: {
+        headers: [ "#", "Diagnosis", "SNOMED Code", "Note"],
+        rows: data["Likely Diagnoses"].map((diagnosis, index) => ([
+          index + 1, diagnosis.Name, diagnosis["SNOMED Code"], diagnosis.Note
+        ]))
+      }}
+    ];
+
+    return json2md(input);
   }
 
   addRow(list) {
@@ -355,7 +399,7 @@ class DifferentialDiagnosis extends React.Component {
               />
             ),
             onClick: () => {
-              downloadStringAsTextFile(this.getMarkDown(), "DiagnoSys Export.md");
+              downloadStringAsTextFile(this.getMarkDown2(), "DiagnoSys Export.md");
               this.setState({showSideBar: false});
             }
           },
@@ -369,7 +413,7 @@ class DifferentialDiagnosis extends React.Component {
               />
             ),
             onClick: () => {
-              downloadMDAsPDF(this.getMarkDown(), "DiagnoSys Export.pdf");
+              downloadMDAsPDF(this.getMarkDown2(), "DiagnoSys Export.pdf");
               this.setState({showSideBar: false});
             }
           },
@@ -555,39 +599,31 @@ class DifferentialDiagnosis extends React.Component {
 }
 
 async function downloadMDAsPDF(markdown, fileName) {
-  const formData  = new FormData();
-  const blob = new Blob([markdown], {type: "text/markdown"});
-  const file = new File([blob], "abc.md");
+  
+  // input markdown
+  const mdBlob = new Blob([markdown], {type: "text/markdown"});
+  const mdFile = new File([mdBlob], "input.md");
 
-  formData.append("input_files[]", file);
+  // css styling
+  const cssRes = await fetch('/pdf.css');
+  const cssBlob = await cssRes.blob();
+  const cssFile = new File([cssBlob], "stylesheet.css")
+  
+  const formData  = new FormData();
+  formData.append("input_files[]", mdFile);
   formData.append("from", "markdown");
   formData.append("to", "pdf");
+  formData.append("css", "stylesheet.css");
+  formData.append("other_files[]", cssFile);
 
-  console.log('sending');
-  // const res = await fetch("http://c.docverter.com/convert");
-  // $.ajax({
-  //   url: "http://c.docverter.com/convert",
-  //   data: formData,
-  //   processData: false,
-  //   type: 'POST',
-  //   success: function ( data ) {
-  //       alert('success');
-  //   },
-  //   error: function (data) {
-  //     alert('fail');
-  //     console.log(data);
-  //   }
-  // });
+  const res = await fetch("https://cors-anywhere.herokuapp.com/http://c.docverter.com/convert", { // a bit of a hack to get around the cors issues for now...
+    method: "POST",
+    body: formData
+  });
 
-  const xhr = new XMLHttpRequest();
-  xhr.open( 'POST', "http://c.docverter.com/convert", true );
-  xhr.onload = function () {
-    // do something to response
-    console.log(this.responseText);
-}
-  xhr.send( formData );
-
-  
+  // TODO: check response status code
+  const outputBlob = await res.blob();
+  window.open(URL.createObjectURL(outputBlob));
 }
 
 function downloadObjectAsJson(exportObj, exportName){

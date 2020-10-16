@@ -12,6 +12,7 @@
     "@testing-library/react": "^9.3.2",
     "@testing-library/user-event": "^7.1.2",
     "fhirclient": "^2.3.5",
+    "json2md": "^1.9.0",
     "query-string": "^6.13.2",
     "react": "^16.13.1",
     "react-beautiful-dnd": "^13.0.0",
