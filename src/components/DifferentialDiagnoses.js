@@ -114,13 +114,13 @@ class DifferentialDiagnosis extends React.Component {
   getExportableObject() {
     return {
       "Likely Diagnoses": this.state.listA.map((row) => ({
-        Name: row.snomed.display,
-        "SNOMED Code": row.snomed.code,
+        Name: row.snomed && row.snomed.display ? row.snomed.display : "...",
+        "SNOMED Code": row.snomed && row.snomed.code ? row.snomed.code : "...",
         "Note": row.note ? row.note : "..."
       })),
       "Critical Diagnoses": this.state.listB.map((row) => ({
-        Name: row.snomed.display,
-        "SNOMED Code": row.snomed.code,
+        Name: row.snomed && row.snomed.display ? row.snomed.display : "...",
+        "SNOMED Code": row.snomed && row.snomed.code ? row.snomed.code : "...",
         "Note": row.note ? row.note : "..."
       })),
       Metadata: {
@@ -188,20 +188,19 @@ class DifferentialDiagnosis extends React.Component {
     const input = [
       { img: [{
         title: "DiagnoSys",
-        source: "http://localhost:3000/diagnosys_logo.jpg"
-      }]}, 
-      { h1: "DiagnoSys - *A Differential Diagnosis Tool*"},
-      { h2: "Critical Diagnoses" },
-      { table: {
-        headers: [ "#", "Diagnosis", "SNOMED Code", "Note"],
-        rows: data["Critical Diagnoses"].map((diagnosis, index) => ([
-          index + 1, diagnosis.Name, diagnosis["SNOMED Code"], diagnosis.Note
-        ]))
-      }},
-      { h2: "Likely Diagnoses" },
+        source: "https://i.imgur.com/RCSYWAk.jpg"
+      }]},
+      { h1: "Likely Diagnoses".toUpperCase() },
       { table: {
         headers: [ "#", "Diagnosis", "SNOMED Code", "Note"],
         rows: data["Likely Diagnoses"].map((diagnosis, index) => ([
+          index + 1, diagnosis.Name, diagnosis["SNOMED Code"], diagnosis.Note
+        ]))
+      }},
+      { h1: "Critical Diagnoses".toUpperCase() },
+      { table: {
+        headers: [ "#", "Diagnosis", "SNOMED Code", "Note"],
+        rows: data["Critical Diagnoses"].map((diagnosis, index) => ([
           index + 1, diagnosis.Name, diagnosis["SNOMED Code"], diagnosis.Note
         ]))
       }}
