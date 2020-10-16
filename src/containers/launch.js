@@ -69,7 +69,7 @@ const Launch = () => {
 
   }, [metadata, getSecurityUri, history, iss, params.launch]);
 
-  return <div>{JSON.stringify(metadata)}</div>;
+  return <div></div>;
 
 };
 

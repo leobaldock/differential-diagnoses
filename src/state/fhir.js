@@ -4,6 +4,7 @@ import queryString from "query-string";
 import useLocalStorage from "../hooks/useLocalStorage";
 
 const useFHIR = () => {
+  const [isEnabled, setIsEnabled] = useState(true);
   const [iss, setIss] = useLocalStorage("iss", null);
   const [launch, setLaunch] = useState(null);
   const [metadata, setMetadata] = useLocalStorage("metadata", null);
@@ -129,10 +130,12 @@ const useFHIR = () => {
    * Check if the current access token is valid.
    */
   const tokenIsValid = () => {
-    return accessToken && accessToken.expiry > Date.now()
-  }
+    return accessToken && accessToken.expiry > Date.now();
+  };
 
   return {
+    isEnabled,
+    setIsEnabled,
     iss,
     setIss,
     launch,

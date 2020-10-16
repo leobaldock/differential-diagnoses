@@ -40,7 +40,7 @@ class DifferentialDiagnosis extends React.Component {
       ],
       listB: [],
       deletingRow: null, // [list, index]
-      loading: false,
+      loading: this.props.FHIR.isEnabled,
       saving: false,
       showColourPalette: false,
       showColourPaletteColour: "white",
@@ -71,57 +71,69 @@ class DifferentialDiagnosis extends React.Component {
   componentDidUpdate(prevProps) {
     const { FHIR } = this.props;
     const { episodeOfCare } = FHIR;
-    if (
-      episodeOfCare !== prevProps.FHIR.episodeOfCare &&
-      episodeOfCare.diagnosis
-    ) {
-      /* Show loader */
-      this.setState({ loading: true });
+    console.log(episodeOfCare);
+    if (episodeOfCare !== prevProps.FHIR.episodeOfCare) {
+      if (episodeOfCare.diagnosis) {
+        /* Show loader */
+        this.setState({ loading: true });
 
-      /* The episodeOfCare was updated and contains diagnoses, load the lists with these diagnoses */
-      let newListA = [];
-      let newListB = [];
+        /* The episodeOfCare was updated and contains diagnoses, load the lists with these diagnoses */
+        let newListA = [];
+        let newListB = [];
 
-      /* To reduce queries, find all the conditions for this patient and then we will filter them */
-      this.props.FHIR.searchResources("Condition", {
-        patient: FHIR.makeRef(FHIR.patient),
-      }).then((result) => {
-        episodeOfCare.diagnosis.forEach((e, index) => {
-          /* Find the condition in the patient's list of conditions */
-          const condition = result.entry.find(
-            (c) => c.fullUrl === `${FHIR.iss}/${e.condition.reference}`
-          ).resource;
+        /* To reduce queries, find all the conditions for this patient and then we will filter them */
+        this.props.FHIR.searchResources("Condition", {
+          patient: FHIR.makeRef(FHIR.patient),
+        })
+          .then((result) => {
+            episodeOfCare.diagnosis.forEach((e, index) => {
+              /* Find the condition in the patient's list of conditions */
+              const condition = result.entry.find(
+                (c) => c.fullUrl === `${FHIR.iss}/${e.condition.reference}`
+              ).resource;
 
-          let list = e.role.text === "Likely" ? newListA : newListB;
-          list.splice(e.rank, 0, {
-            id: index,
-            note: "",
-            snomed: {
-              code: condition.code.coding[0].code,
-              display: condition.code.coding[0].display,
-            },
+              let list = e.role.text === "Likely" ? newListA : newListB;
+              list.splice(e.rank, 0, {
+                id: index,
+                note: "",
+                snomed: {
+                  code: condition.code.coding[0].code,
+                  display: condition.code.coding[0].display,
+                },
+              });
+            });
+
+            // console.log
+            this.setState({ listA: newListA, listB: newListB, loading: false });
+          })
+          .catch((err) => {
+            console.error(err);
           });
-        });
+      } else {
+        this.setState({ loading: false });
+      }
+    }
 
-        this.setState({ listA: newListA, listB: newListB, loading: false });
-      });
+    if (FHIR.isEnabled !== prevProps.FHIR.isEnabled) {
+      console.log(FHIR.isEnabled);
+      this.setState({ loading: FHIR.isEnabled });
     }
   }
 
   /**
-   * Formats each list to support formatting them as student-interpretable notes 
+   * Formats each list to support formatting them as student-interpretable notes
    */
   getExportableObject() {
     return {
       "Likely Diagnoses": this.state.listA.map((row) => ({
         Name: row.snomed.display,
         "SNOMED Code": row.snomed.code,
-        "Note": row.note ? row.note : "..."
+        Note: row.note ? row.note : "...",
       })),
       "Critical Diagnoses": this.state.listB.map((row) => ({
         Name: row.snomed.display,
         "SNOMED Code": row.snomed.code,
-        "Note": row.note ? row.note : "..."
+        Note: row.note ? row.note : "...",
       })),
       Metadata: {
         // bump this every time you change the format of the export.
@@ -172,39 +184,53 @@ class DifferentialDiagnosis extends React.Component {
       data["Critical Diagnoses"].push({
         Name: "No Diagnoses Listed",
         "SNOMED Code": "",
-        Note: ""
+        Note: "",
       });
     }
     if (data["Likely Diagnoses"].length === 0) {
       data["Likely Diagnoses"].push({
         Name: "No Diagnoses Listed",
         "SNOMED Code": "",
-        Note: ""
+        Note: "",
       });
     }
 
     const json2md = require("json2md");
 
     const input = [
-      { img: [{
-        title: "DiagnoSys",
-        source: "http://localhost:3000/diagnosys_logo.jpg"
-      }]}, 
-      { h1: "DiagnoSys - *A Differential Diagnosis Tool*"},
+      {
+        img: [
+          {
+            title: "DiagnoSys",
+            source: "http://localhost:3000/diagnosys_logo.jpg",
+          },
+        ],
+      },
+      { h1: "DiagnoSys - *A Differential Diagnosis Tool*" },
       { h2: "Critical Diagnoses" },
-      { table: {
-        headers: [ "#", "Diagnosis", "SNOMED Code", "Note"],
-        rows: data["Critical Diagnoses"].map((diagnosis, index) => ([
-          index + 1, diagnosis.Name, diagnosis["SNOMED Code"], diagnosis.Note
-        ]))
-      }},
+      {
+        table: {
+          headers: ["#", "Diagnosis", "SNOMED Code", "Note"],
+          rows: data["Critical Diagnoses"].map((diagnosis, index) => [
+            index + 1,
+            diagnosis.Name,
+            diagnosis["SNOMED Code"],
+            diagnosis.Note,
+          ]),
+        },
+      },
       { h2: "Likely Diagnoses" },
-      { table: {
-        headers: [ "#", "Diagnosis", "SNOMED Code", "Note"],
-        rows: data["Likely Diagnoses"].map((diagnosis, index) => ([
-          index + 1, diagnosis.Name, diagnosis["SNOMED Code"], diagnosis.Note
-        ]))
-      }}
+      {
+        table: {
+          headers: ["#", "Diagnosis", "SNOMED Code", "Note"],
+          rows: data["Likely Diagnoses"].map((diagnosis, index) => [
+            index + 1,
+            diagnosis.Name,
+            diagnosis["SNOMED Code"],
+            diagnosis.Note,
+          ]),
+        },
+      },
     ];
 
     return json2md(input);
@@ -212,10 +238,10 @@ class DifferentialDiagnosis extends React.Component {
 
   /**
    * Adds a row, using the current time as identifier, into a supplied List.
-   * 
+   *
    * If the supplied list is not one of the two instantiated lists, the
    * function will print an error.
-   * 
+   *
    * @param {*} list an array representing a diagnosis list
    */
   addRow(list) {
@@ -231,15 +257,15 @@ class DifferentialDiagnosis extends React.Component {
     else console.log("Unknown list");
   }
 
- /**
-  *  Deletes the row at a specified index within a specified list array.
-  * 
-  *  If the supplied list is not one of the two instantiated lists, the
-  *  function will print an error.
-  * 
-  * @param {*} list an array representing a diagnosis list.
-  * @param {*} index the specified index in the list to remove
-  */
+  /**
+   *  Deletes the row at a specified index within a specified list array.
+   *
+   *  If the supplied list is not one of the two instantiated lists, the
+   *  function will print an error.
+   *
+   * @param {*} list an array representing a diagnosis list.
+   * @param {*} index the specified index in the list to remove
+   */
   deleteRow(list, index) {
     list.splice(index, 1);
 
@@ -256,7 +282,7 @@ class DifferentialDiagnosis extends React.Component {
 
   /**
    * Moves a list item into a specified index. If the specified index is
-   * out-of-bounds, it will move into the minimum or maximum position. For 
+   * out-of-bounds, it will move into the minimum or maximum position. For
    * instance, calling the function to move an item to position -1 will instead
    * move it into the 0th index.
    * @param {*} startIndex the original index of the array item
@@ -267,7 +293,8 @@ class DifferentialDiagnosis extends React.Component {
     // Go to top of list
     if (endIndex < 0) endIndex = 0;
     // Go to bottom of list
-    if (endIndex >= this.state.rows.length) endIndex = this.state.rows.length - 1;
+    if (endIndex >= this.state.rows.length)
+      endIndex = this.state.rows.length - 1;
 
     const result = this.reorder(this.state.rows, startIndex, endIndex);
     this.setState({
@@ -334,7 +361,7 @@ class DifferentialDiagnosis extends React.Component {
   /**
    * Facilitates  moving a list item to a different list once a drag-and-drop
    * interaction has occurred.
-   * 
+   *
    * @param {*} sourceList the current parent list of the list item
    * @param {*} destinationList the desired parent list of the list item
    * @param {*} droppableSource  react-beautiful-dnd <Droppable/> sourcecontainer
@@ -358,7 +385,7 @@ class DifferentialDiagnosis extends React.Component {
    * Used by react-beautiful-dnd to facilitate the drag-and-drop interaction.
    * Prevents dropping an item out of a valid container, and calls appropriate
    * functions to rearrange list contents depending on the dropped location.
-   * 
+   *
    * @param {*} result representation of dragged items source container and
    * destination container
    */
@@ -432,7 +459,7 @@ class DifferentialDiagnosis extends React.Component {
    * Creates the appropriate FHIR Condition resources for each item in a
    * supplied list
    * @param {*} list an array representing a diagnosis list
-   * @param {*} role used to identify the 'Likely' or 'Need to Rule Out' 
+   * @param {*} role used to identify the 'Likely' or 'Need to Rule Out'
    * diagnosis list
    */
   async createDiagnosisList(list, role) {
@@ -506,8 +533,8 @@ class DifferentialDiagnosis extends React.Component {
             ),
             onClick: () => {
               downloadMDAsPDF(this.getMarkDown2(), "DiagnoSys Export.pdf");
-              this.setState({showSideBar: false});
-            }
+              this.setState({ showSideBar: false });
+            },
           },
         ];
         break;
@@ -746,31 +773,34 @@ class DifferentialDiagnosis extends React.Component {
 
 /**
  * TODO: @Luke Wilson
- * @param {*} markdown 
- * @param {*} fileName 
+ * @param {*} markdown
+ * @param {*} fileName
  */
 async function downloadMDAsPDF(markdown, fileName) {
-  
   // input markdown
-  const mdBlob = new Blob([markdown], {type: "text/markdown"});
+  const mdBlob = new Blob([markdown], { type: "text/markdown" });
   const mdFile = new File([mdBlob], "input.md");
 
   // css styling
-  const cssRes = await fetch('/pdf.css');
+  const cssRes = await fetch("/pdf.css");
   const cssBlob = await cssRes.blob();
-  const cssFile = new File([cssBlob], "stylesheet.css")
-  
-  const formData  = new FormData();
+  const cssFile = new File([cssBlob], "stylesheet.css");
+
+  const formData = new FormData();
   formData.append("input_files[]", mdFile);
   formData.append("from", "markdown");
   formData.append("to", "pdf");
   formData.append("css", "stylesheet.css");
   formData.append("other_files[]", cssFile);
 
-  const res = await fetch("https://cors-anywhere.herokuapp.com/http://c.docverter.com/convert", { // a bit of a hack to get around the cors issues for now...
-    method: "POST",
-    body: formData
-  });
+  const res = await fetch(
+    "https://cors-anywhere.herokuapp.com/http://c.docverter.com/convert",
+    {
+      // a bit of a hack to get around the cors issues for now...
+      method: "POST",
+      body: formData,
+    }
+  );
 
   // TODO: check response status code
   const outputBlob = await res.blob();
@@ -791,8 +821,8 @@ function downloadObjectAsJson(exportObj, exportName) {
 
 /**
  * TODO: @Luke Wilson
- * @param {*} string 
- * @param {*} fileName 
+ * @param {*} string
+ * @param {*} fileName
  */
 function downloadStringAsTextFile(string, fileName) {
   var dataString =
@@ -802,8 +832,8 @@ function downloadStringAsTextFile(string, fileName) {
 
 /**
  * TODO: @Luke Wilson
- * @param {*} dataString 
- * @param {*} fileName 
+ * @param {*} dataString
+ * @param {*} fileName
  */
 function doDownload(dataString, fileName) {
   var downloadAnchorNode = document.createElement("a");
