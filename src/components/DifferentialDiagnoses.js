@@ -66,6 +66,7 @@ class DifferentialDiagnosis extends React.Component {
     this.getMarkDown = this.getMarkDown.bind(this);
     this.getMarkDown2 = this.getMarkDown2.bind(this);
     this.getMenuContent = this.getMenuContent.bind(this);
+    this.checkForDuplicates = this.checkForDuplicates.bind(this);
   }
 
   componentDidUpdate(prevProps) {
@@ -221,6 +222,25 @@ class DifferentialDiagnosis extends React.Component {
     return json2md(input);
   }
 
+  componentWillUpdate() {
+    this.checkForDuplicates();
+  }
+
+  checkForDuplicates() {
+    const alreadyChecked = [];
+    for(let list of [this.state.listA, this.state.listB]) {
+      for(let row of list) {
+        row.isDuplicate = false;
+        const duplicate = alreadyChecked.find(otherRow => otherRow.snomed.code === row.snomed.code);
+        if (!row.snomed.code || duplicate) {
+          row.isDuplicate = true;
+          if (duplicate) duplicate.isDuplicate = true;
+        } 
+        alreadyChecked.push(row);
+      }
+    }
+  }
+
   /**
    * Adds a row, using the current time as identifier, into a supplied List.
    *
@@ -240,6 +260,7 @@ class DifferentialDiagnosis extends React.Component {
     if (list === this.state.listA) this.setState({ listA: [...list] });
     else if (list === this.state.listB) this.setState({ listB: [...list] });
     else console.log("Unknown list");
+
   }
 
   /**
