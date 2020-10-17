@@ -4,6 +4,7 @@ import queryString from "query-string";
 import useLocalStorage from "../hooks/useLocalStorage";
 
 const useFHIR = () => {
+  const [error, setError] = useState("");
   const [isEnabled, setIsEnabled] = useState(true);
   const [iss, setIss] = useLocalStorage("iss", null);
   const [launch, setLaunch] = useState(null);
@@ -134,6 +135,8 @@ const useFHIR = () => {
   };
 
   return {
+    error,
+    setError,
     isEnabled,
     setIsEnabled,
     iss,

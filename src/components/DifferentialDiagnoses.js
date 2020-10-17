@@ -21,10 +21,13 @@ import Popup from "./Popup";
 import TitleBar from "./TitleBar";
 import Sidebar from "react-sidebar";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import equal from "deep-equal";
 
 class DifferentialDiagnosis extends React.Component {
   constructor(props) {
     super(props);
+
+    console.log(this.props.FHIR.error);
 
     this.state = {
       listA: [
@@ -67,58 +70,70 @@ class DifferentialDiagnosis extends React.Component {
     this.getMarkDown2 = this.getMarkDown2.bind(this);
     this.getMenuContent = this.getMenuContent.bind(this);
     this.checkForDuplicates = this.checkForDuplicates.bind(this);
+    this.requestSave = this.requestSave.bind(this);
+    this.handleIncomingFHIR = this.handleIncomingFHIR.bind(this);
   }
 
-  componentDidUpdate(prevProps) {
+  shouldComponentUpdate(nextProps) {
+    if (!nextProps.FHIR.episodeOfCare) return false;
+    return true;
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+
+    /* Handle incoming FHIR */
     const { FHIR } = this.props;
     const { episodeOfCare } = FHIR;
-    console.log(episodeOfCare);
-    if (episodeOfCare !== prevProps.FHIR.episodeOfCare) {
-      if (episodeOfCare.diagnosis) {
-        /* Show loader */
-        this.setState({ loading: true });
-
-        /* The episodeOfCare was updated and contains diagnoses, load the lists with these diagnoses */
-        let newListA = [];
-        let newListB = [];
-
-        /* To reduce queries, find all the conditions for this patient and then we will filter them */
-        this.props.FHIR.searchResources("Condition", {
-          patient: FHIR.makeRef(FHIR.patient),
-        })
-          .then((result) => {
-            episodeOfCare.diagnosis.forEach((e, index) => {
-              /* Find the condition in the patient's list of conditions */
-              const condition = result.entry.find(
-                (c) => c.fullUrl === `${FHIR.iss}/${e.condition.reference}`
-              ).resource;
-
-              let list = e.role.text === "Likely" ? newListA : newListB;
-              list.splice(e.rank, 0, {
-                id: index,
-                note: "",
-                snomed: {
-                  code: condition.code.coding[0].code,
-                  display: condition.code.coding[0].display,
-                },
-              });
-            });
-
-            // console.log
-            this.setState({ listA: newListA, listB: newListB, loading: false });
-          })
-          .catch((err) => {
-            console.error(err);
-          });
-      } else {
-        this.setState({ loading: false });
-      }
+    if (episodeOfCare.id !== prevProps.FHIR.episodeOfCare?.id && episodeOfCare.diagnosis) {
+      this.handleIncomingFHIR();
     }
 
-    if (FHIR.isEnabled !== prevProps.FHIR.isEnabled) {
-      console.log(FHIR.isEnabled);
-      this.setState({ loading: FHIR.isEnabled });
+    /* Handle auto-saving */
+    if (!equal({listA: this.state.listA, listB: this.state.listB},
+        {listA: prevState.listA, listB: prevState.listB})) {
+      this.requestSave();
     }
+  }
+
+  handleIncomingFHIR() {
+    const { FHIR } = this.props;
+    const { episodeOfCare } = FHIR;
+
+    /* Show loader */
+    this.setState({ loading: true });  
+
+    /* The episodeOfCare was updated and contains diagnoses, load the lists with these diagnoses */
+    let newListA = [];
+    let newListB = [];
+
+    /* To reduce queries, find all the conditions for this patient and then we will filter them */
+    this.props.FHIR.searchResources("Condition", {
+      patient: FHIR.makeRef(FHIR.patient),
+    })
+    .then((result) => {
+      episodeOfCare.diagnosis.forEach((e, index) => {
+        /* Find the condition in the patient's list of conditions */
+        const condition = result.entry.find(
+          (c) => c.fullUrl === `${FHIR.iss}/${e.condition.reference}`
+        ).resource;
+
+        let list = e.role.text === "Likely" ? newListA : newListB;
+        list.splice(e.rank, 0, {
+          id: index,
+          note: "",
+          snomed: {
+            code: condition.code.coding[0].code,
+            display: condition.code.coding[0].display,
+          },
+        });
+      });
+
+      this.setState({ listA: newListA, listB: newListB, loading: false });
+    })
+    .catch((err) => {
+      console.error(err);
+      this.setState({ loading: false });
+    });
   }
 
   /**
@@ -425,6 +440,13 @@ class DifferentialDiagnosis extends React.Component {
     }
   }
 
+  requestSave() {
+    if (this.saveBackoff) {
+      clearTimeout(this.saveBackoff);
+    }
+    this.saveBackoff = setTimeout(() => this.saveToFHIR(), 20 * 1000);
+  }
+
   /**
    * An asynchronous function to create the appropriate FHIR resource
    * representation of the Differential Diagnosis lists.
@@ -571,7 +593,7 @@ class DifferentialDiagnosis extends React.Component {
   renderLoading() {
     return (
       <div className="loading">
-        <CircleLoader size={100} />
+        <CircleLoader size={100} color="#FFFFFF" />
       </div>
     );
   }
