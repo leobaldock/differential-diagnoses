@@ -1,12 +1,10 @@
 import { faComments as faCommentsRegular } from "@fortawesome/free-regular-svg-icons";
-import { faMarkdown, faJsSquare } from "@fortawesome/free-brands-svg-icons";
+import { faMarkdown, faJsSquare, faGripfire } from "@fortawesome/free-brands-svg-icons";
 import {
   faComments as faCommentsSolid,
   faDownload,
   faPalette,
-  faSave,
   faFilePdf,
-  faSpinner,
   faExpandAlt,
   faCompressAlt
 } from "@fortawesome/free-solid-svg-icons";
@@ -26,8 +24,6 @@ import equal from "deep-equal";
 class DifferentialDiagnosis extends React.Component {
   constructor(props) {
     super(props);
-
-    console.log(this.props.FHIR.error);
 
     this.state = {
       listA: [
@@ -50,6 +46,11 @@ class DifferentialDiagnosis extends React.Component {
       showColourPalette: false,
       showSideBar: false,
     };
+
+    this.lastSaveSnapshot = {
+      listA: [],
+      listB: []
+    }
 
     this.id2List = {
       droppable1: "listA",
@@ -75,23 +76,31 @@ class DifferentialDiagnosis extends React.Component {
   }
 
   shouldComponentUpdate(nextProps) {
-    if (!nextProps.FHIR.episodeOfCare) return false;
+    //if (this.props.FHIR.isEnabled && !nextProps.FHIR.isEnabled) return true;
+    if (nextProps.FHIR.isEnabled && !nextProps.FHIR.episodeOfCare) return false;
     return true;
   }
 
   componentDidUpdate(prevProps, prevState) {
 
     /* Handle incoming FHIR */
-    const { FHIR } = this.props;
-    const { episodeOfCare } = FHIR;
-    if (episodeOfCare.id !== prevProps.FHIR.episodeOfCare?.id && episodeOfCare.diagnosis) {
-      this.handleIncomingFHIR();
+    const { episodeOfCare } = this.props.FHIR;
+    if (episodeOfCare && episodeOfCare.id !== prevProps.FHIR.episodeOfCare?.id) {
+      if (episodeOfCare.diagnosis) {
+        this.handleIncomingFHIR();
+      } else {
+        this.setState({loading: false});
+      }
     }
 
     /* Handle auto-saving */
-    if (!equal({listA: this.state.listA, listB: this.state.listB},
-        {listA: prevState.listA, listB: prevState.listB})) {
+    if (!this.state.saving && !equal({listA: this.state.listA, listB: this.state.listB}, this.lastSaveSnapshot)) {
       this.requestSave();
+    }
+
+    /* Standalone mode */
+    if (prevProps.FHIR.isEnabled && !this.props.FHIR.isEnabled) {
+      this.setState({ loading: false });
     }
   }
 
@@ -128,6 +137,7 @@ class DifferentialDiagnosis extends React.Component {
         });
       });
 
+      this.lastSaveSnapshot = deepClone({listA: newListA, listB: newListB});
       this.setState({ listA: newListA, listB: newListB, loading: false });
     })
     .catch((err) => {
@@ -441,10 +451,14 @@ class DifferentialDiagnosis extends React.Component {
   }
 
   requestSave() {
+    if (!this.state.isUnsaved) this.setState({isUnsaved: true});
     if (this.saveBackoff) {
       clearTimeout(this.saveBackoff);
     }
-    this.saveBackoff = setTimeout(() => this.saveToFHIR(), 20 * 1000);
+    this.saveBackoff = setTimeout(() => {
+      this.saveToFHIR();
+      this.setState({isUnsaved: false});
+    }, 5 * 1000);
   }
 
   /**
@@ -454,6 +468,8 @@ class DifferentialDiagnosis extends React.Component {
   async saveToFHIR() {
     const { FHIR } = this.props;
 
+    
+    this.lastSaveSnapshot = deepClone({listA: this.state.listA, listB: this.state.listB});
     this.setState({ saving: true });
 
     const likelyDiagnoses = await this.createDiagnosisList(
@@ -602,19 +618,13 @@ class DifferentialDiagnosis extends React.Component {
    * Adds a loading spinner for save button
    */
   renderSave() {
-    const { saving } = this.state;
-    if (saving) {
-      return <FAIButton key="save_button" icon={faSpinner} spin />;
-    }
+    if (!this.props.FHIR.isEnabled) return null;
 
-    return (
-      <FAIButton
-        key="save_button"
-        icon={faSave}
-        title={"Save to FHIR server"}
-        onClick={this.saveToFHIR}
-      />
-    );
+    const { saving, isUnsaved } = this.state;
+
+    if (saving) return <FontAwesomeIcon key="save_icon" size="2x" icon={faGripfire} title="Saving to FHIR server" color="#ffce00" />;
+    if (isUnsaved) return <FAIButton key="save_button" icon={faGripfire} title="Save changes FHIR server" color="#da7676" onClick={this.saveToFHIR}/>;
+    return <FontAwesomeIcon key="save_icon" size="2x" icon={faGripfire} title="Changes are saved to the FHIR server" color="#5dad89" />;
   }
 
   render() {
@@ -629,6 +639,7 @@ class DifferentialDiagnosis extends React.Component {
       this.state.listB.every((row) => row.isNotesOpen);
 
     const pageTitleButtons = [
+      this.renderSave(),
       <FAIButton
         key="toggle_comments_button"
         icon={areAllCommentsOpen ? faCommentsRegular : faCommentsSolid}
@@ -657,7 +668,6 @@ class DifferentialDiagnosis extends React.Component {
             : "Show colour editor"
         }
       />,
-      this.renderSave(),
       <FAIButton
         key="export_button"
         icon={faDownload}
@@ -894,6 +904,10 @@ function toggleFullScreen() {
   }
 
   if (requestMethod) requestMethod.call(element);
+}
+
+function deepClone(obj) {
+  return JSON.parse(JSON.stringify(obj));
 }
 
 export default withFHIR(DifferentialDiagnosis);

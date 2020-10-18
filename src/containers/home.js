@@ -11,7 +11,6 @@ import EnvService from "../util/getEnv";
 
 const Home = (props) => {
   const {
-    isEnabled,
     setIsEnabled,
     iss,
     accessToken,
@@ -80,7 +79,6 @@ const Home = (props) => {
       })
       .catch((error) => {
         /* If there are any errors then just disable FHIR and assume we are running external to the EHR */
-        alert('hi');
         setIsEnabled(false);
         console.error(error);
       });
