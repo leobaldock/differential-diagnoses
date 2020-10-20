@@ -11,6 +11,7 @@ import EnvService from "../util/getEnv";
 
 const Home = (props) => {
   const {
+    setIsEnabled,
     iss,
     accessToken,
     setAccessToken,
@@ -31,13 +32,14 @@ const Home = (props) => {
   useEffect(() => {
     if (iss && params.code) {
       fetchAccessToken();
+    }  else {
+      setIsEnabled(false)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [params, iss]);
 
   /* Runs when access token changes */
   useEffect(() => {
-    console.log(contextData);
     if (tokenIsValid() && contextData != null) {
       fetchPatient(contextData.patient);
     }
@@ -46,7 +48,6 @@ const Home = (props) => {
 
   /* Runs when patient resource changes */
   useEffect(() => {
-    console.log(patient);
     if (tokenIsValid() && patient) {
       fetchCreateEpisodeOfCare();
     }
@@ -76,39 +77,52 @@ const Home = (props) => {
           expiry: Date.now() + data.expires_in * 1000,
         });
       })
-      .catch((error) => console.log(error));
+      .catch((error) => {
+        /* If there are any errors then just disable FHIR and assume we are running external to the EHR */
+        setIsEnabled(false);
+        console.error(error);
+      });
   };
 
   const fetchPatient = async (patientId) => {
     if (!patientId) return;
-    getResource(`Patient/${patientId}`).then((res) => setPatient(res));
+    getResource(`Patient/${patientId}`)
+      .then((res) => setPatient(res))
+      .catch((err) => {
+        /* If there are any errors then just disable FHIR and assume we are running external to the EHR */
+        setIsEnabled(false);
+      });
   };
 
   /**
    * Search for an EpisodeOfCare resource for this patient and create one if none exists.
    */
   const fetchCreateEpisodeOfCare = async () => {
-    console.log(patient);
-    let search = await searchResources(
-      "EpisodeOfCare",
-      {
-        patient: makeRef(patient),
-      },
-      ["-_lastUpdated"]
-    );
+    try {
+      let search = await searchResources(
+        "EpisodeOfCare",
+        {
+          patient: makeRef(patient),
+        },
+        ["-_lastUpdated"]
+      );
 
-    if (search.entry && search.entry.length > 0) {
-      setEpisodeOfCare(search.entry[0].resource);
-      return;
+      if (search.entry && search.entry.length > 0) {
+        setEpisodeOfCare(search.entry[0].resource);
+        return;
+      }
+
+      const episodeOfCare = await createResource("EpisodeOfCare", {
+        resourceType: "EpisodeOfCare",
+        status: "active",
+        patient: { reference: makeRef(patient) },
+      });
+
+      setEpisodeOfCare(episodeOfCare);
+    } catch {
+      /* If there are any errors then just disable FHIR and assume we are running external to the EHR */
+      setIsEnabled(false);
     }
-
-    const episodeOfCare = await createResource("EpisodeOfCare", {
-      resourceType: "EpisodeOfCare",
-      status: "active",
-      patient: { reference: makeRef(patient) },
-    });
-
-    setEpisodeOfCare(episodeOfCare);
   };
 
   return (

@@ -42,7 +42,7 @@ import FAIButton from "./FAIButton";
  * @param {*} setNotesOpen boolean toggle to expand/collapse a user row note
  */
 export default function List({title, colour, showColourPalette, rows, addRow, deleteRow, updateRowNumber, droppableId, transfer, isLeft, setSnomed, setNote, setNotesOpen}){
-    
+
     //Use local storage to maintain list colour on page refresh
     const [listColour, setListColour] = useLocalStorage(`${isLeft ? "left" : "right"}_list_colour`, colour);
     //set custom list styling for react-beautiful-dnd
@@ -140,6 +140,7 @@ export default function List({title, colour, showColourPalette, rows, addRow, de
                                                     deleteRow={deleteRow}
                                                     updateRowNumber={updateRowNumber}
                                                     transfer={transfer}
+                                                    isDuplicate={row.isDuplicate}
                                                     isLeft={snapshot.draggingOver == null ? isLeft : snapshot.draggingOver === "droppable1"}
                                                 />
                                             </span>
@@ -178,7 +179,9 @@ export default function List({title, colour, showColourPalette, rows, addRow, de
  * @param {*} isNotesOpen boolean state of comment visibility
  * @param {*} setNotesOpen boolean toggle to expand/collapse a user row note
  */
-function ListRow({listColour, note, content, rowNumber, deleteRow, updateRowNumber, transfer, isLeft, setSnomed, setNote, isNotesOpen, setNotesOpen}) {
+function ListRow({listColour, note, content, rowNumber, deleteRow, updateRowNumber, transfer, isLeft, setSnomed, setNote, isNotesOpen, setNotesOpen, isDuplicate}) {
+    // alert('' + isDuplicate)
+    
     //state hook for user changing row number via editing the rows number
     const [inputNum, setInputNum] = useState(rowNumber);
     //event handlers for updating row number on input on an 'Enter' key
@@ -211,7 +214,7 @@ function ListRow({listColour, note, content, rowNumber, deleteRow, updateRowNumb
                 />
             </div>
             <div style={{flexGrow: 1, display: "flex", flexDirection: "column"}}>
-                <div className="listEntry">
+                <div className="listEntry" style={{border: isDuplicate ? "solid 4px #ffce00" : "none"}}>
                     <FontAwesomeIcon style={{cursor: "grab"}} icon={faBars}/>
                     <span style={{flexGrow: 1, marginLeft: "1em", marginRight: "1em"}}>
                         <SnomedSearch content={content} callback={setSnomed} listColour={listColour} />

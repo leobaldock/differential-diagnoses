@@ -1,12 +1,10 @@
 import { faComments as faCommentsRegular } from "@fortawesome/free-regular-svg-icons";
-import { faMarkdown, faJsSquare } from "@fortawesome/free-brands-svg-icons";
+import { faMarkdown, faJsSquare, faGripfire } from "@fortawesome/free-brands-svg-icons";
 import {
   faComments as faCommentsSolid,
   faDownload,
   faPalette,
-  faSave,
   faFilePdf,
-  faSpinner,
   faExpandAlt,
   faCompressAlt
 } from "@fortawesome/free-solid-svg-icons";
@@ -21,6 +19,7 @@ import Popup from "./Popup";
 import TitleBar from "./TitleBar";
 import Sidebar from "react-sidebar";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import equal from "deep-equal";
 
 class DifferentialDiagnosis extends React.Component {
   constructor(props) {
@@ -42,11 +41,16 @@ class DifferentialDiagnosis extends React.Component {
       ],
       listB: [],
       deletingRow: null, // [list, index]
-      loading: false,
+      loading: this.props.FHIR.isEnabled,
       saving: false,
       showColourPalette: false,
       showSideBar: false,
     };
+
+    this.lastSaveSnapshot = {
+      listA: [],
+      listB: []
+    }
 
     this.id2List = {
       droppable1: "listA",
@@ -66,50 +70,84 @@ class DifferentialDiagnosis extends React.Component {
     this.getMarkDown = this.getMarkDown.bind(this);
     this.getMarkDown2 = this.getMarkDown2.bind(this);
     this.getMenuContent = this.getMenuContent.bind(this);
+    this.checkForDuplicates = this.checkForDuplicates.bind(this);
+    this.requestSave = this.requestSave.bind(this);
+    this.handleIncomingFHIR = this.handleIncomingFHIR.bind(this);
   }
 
-  componentDidUpdate(prevProps) {
-    const { FHIR } = this.props;
-    const { episodeOfCare } = FHIR;
-    if (
-      episodeOfCare !== prevProps.FHIR.episodeOfCare &&
-      episodeOfCare.diagnosis
-    ) {
-      /* Show loader */
-      this.setState({ loading: true });
+  shouldComponentUpdate(nextProps) {
+    //if (this.props.FHIR.isEnabled && !nextProps.FHIR.isEnabled) return true;
+    if (nextProps.FHIR.isEnabled && !nextProps.FHIR.episodeOfCare) return false;
+    return true;
+  }
 
-      /* The episodeOfCare was updated and contains diagnoses, load the lists with these diagnoses */
-      let newListA = [];
-      let newListB = [];
+  componentDidUpdate(prevProps, prevState) {
 
-      /* To reduce queries, find all the conditions for this patient and then we will filter them */
-      this.props.FHIR.searchResources("Condition", {
-        patient: FHIR.makeRef(FHIR.patient),
-      }).then((result) => {
-        episodeOfCare.diagnosis.forEach((e, index) => {
-          /* Find the condition in the patient's list of conditions */
-          const condition = result.entry.find(
-            (c) => c.fullUrl === `${FHIR.iss}/${e.condition.reference}`
-          ).resource;
+    /* Handle incoming FHIR */
+    const { episodeOfCare } = this.props.FHIR;
+    if (episodeOfCare && episodeOfCare.id !== prevProps.FHIR.episodeOfCare?.id) {
+      if (episodeOfCare.diagnosis) {
+        this.handleIncomingFHIR();
+      } else {
+        this.setState({loading: false});
+      }
+    }
 
-          let list = e.role.text === "Likely" ? newListA : newListB;
-          list.splice(e.rank, 0, {
-            id: index,
-            note: "",
-            snomed: {
-              code: condition.code.coding[0].code,
-              display: condition.code.coding[0].display,
-            },
-          });
-        });
+    /* Handle auto-saving */
+    if (!this.state.saving && !equal({listA: this.state.listA, listB: this.state.listB}, this.lastSaveSnapshot)) {
+      this.requestSave();
+    }
 
-        this.setState({ listA: newListA, listB: newListB, loading: false });
-      });
+    /* Standalone mode */
+    if (prevProps.FHIR.isEnabled && !this.props.FHIR.isEnabled) {
+      this.setState({ loading: false });
     }
   }
 
+  handleIncomingFHIR() {
+    const { FHIR } = this.props;
+    const { episodeOfCare } = FHIR;
+
+    /* Show loader */
+    this.setState({ loading: true });  
+
+    /* The episodeOfCare was updated and contains diagnoses, load the lists with these diagnoses */
+    let newListA = [];
+    let newListB = [];
+
+    /* To reduce queries, find all the conditions for this patient and then we will filter them */
+    this.props.FHIR.searchResources("Condition", {
+      patient: FHIR.makeRef(FHIR.patient),
+    })
+    .then((result) => {
+      episodeOfCare.diagnosis.forEach((e, index) => {
+        /* Find the condition in the patient's list of conditions */
+        const condition = result.entry.find(
+          (c) => c.fullUrl === `${FHIR.iss}/${e.condition.reference}`
+        ).resource;
+
+        let list = e.role.text === "Likely" ? newListA : newListB;
+        list.splice(e.rank, 0, {
+          id: index,
+          note: "",
+          snomed: {
+            code: condition.code.coding[0].code,
+            display: condition.code.coding[0].display,
+          },
+        });
+      });
+
+      this.lastSaveSnapshot = deepClone({listA: newListA, listB: newListB});
+      this.setState({ listA: newListA, listB: newListB, loading: false });
+    })
+    .catch((err) => {
+      console.error(err);
+      this.setState({ loading: false });
+    });
+  }
+
   /**
-   * Formats each list to support formatting them as student-interpretable notes 
+   * Formats each list to support formatting them as student-interpretable notes
    */
   getExportableObject() {
     return {
@@ -172,14 +210,14 @@ class DifferentialDiagnosis extends React.Component {
       data["Critical Diagnoses"].push({
         Name: "No Diagnoses Listed",
         "SNOMED Code": "",
-        Note: ""
+        Note: "",
       });
     }
     if (data["Likely Diagnoses"].length === 0) {
       data["Likely Diagnoses"].push({
         Name: "No Diagnoses Listed",
         "SNOMED Code": "",
-        Note: ""
+        Note: "",
       });
     }
 
@@ -209,12 +247,31 @@ class DifferentialDiagnosis extends React.Component {
     return json2md(input);
   }
 
+  componentWillUpdate() {
+    this.checkForDuplicates();
+  }
+
+  checkForDuplicates() {
+    const alreadyChecked = [];
+    for(let list of [this.state.listA, this.state.listB]) {
+      for(let row of list) {
+        row.isDuplicate = false;
+        const duplicate = alreadyChecked.find(otherRow => otherRow.snomed.code === row.snomed.code);
+        if (!row.snomed.code || duplicate) {
+          row.isDuplicate = true;
+          if (duplicate) duplicate.isDuplicate = true;
+        } 
+        alreadyChecked.push(row);
+      }
+    }
+  }
+
   /**
    * Adds a row, using the current time as identifier, into a supplied List.
-   * 
+   *
    * If the supplied list is not one of the two instantiated lists, the
    * function will print an error.
-   * 
+   *
    * @param {*} list an array representing a diagnosis list
    */
   addRow(list) {
@@ -228,17 +285,18 @@ class DifferentialDiagnosis extends React.Component {
     if (list === this.state.listA) this.setState({ listA: [...list] });
     else if (list === this.state.listB) this.setState({ listB: [...list] });
     else console.log("Unknown list");
+
   }
 
- /**
-  *  Deletes the row at a specified index within a specified list array.
-  * 
-  *  If the supplied list is not one of the two instantiated lists, the
-  *  function will print an error.
-  * 
-  * @param {*} list an array representing a diagnosis list.
-  * @param {*} index the specified index in the list to remove
-  */
+  /**
+   *  Deletes the row at a specified index within a specified list array.
+   *
+   *  If the supplied list is not one of the two instantiated lists, the
+   *  function will print an error.
+   *
+   * @param {*} list an array representing a diagnosis list.
+   * @param {*} index the specified index in the list to remove
+   */
   deleteRow(list, index) {
     list.splice(index, 1);
 
@@ -255,7 +313,7 @@ class DifferentialDiagnosis extends React.Component {
 
   /**
    * Moves a list item into a specified index. If the specified index is
-   * out-of-bounds, it will move into the minimum or maximum position. For 
+   * out-of-bounds, it will move into the minimum or maximum position. For
    * instance, calling the function to move an item to position -1 will instead
    * move it into the 0th index.
    * @param {*} startIndex the original index of the array item
@@ -266,7 +324,8 @@ class DifferentialDiagnosis extends React.Component {
     // Go to top of list
     if (endIndex < 0) endIndex = 0;
     // Go to bottom of list
-    if (endIndex >= this.state.rows.length) endIndex = this.state.rows.length - 1;
+    if (endIndex >= this.state.rows.length)
+      endIndex = this.state.rows.length - 1;
 
     const result = this.reorder(this.state.rows, startIndex, endIndex);
     this.setState({
@@ -333,7 +392,7 @@ class DifferentialDiagnosis extends React.Component {
   /**
    * Facilitates  moving a list item to a different list once a drag-and-drop
    * interaction has occurred.
-   * 
+   *
    * @param {*} sourceList the current parent list of the list item
    * @param {*} destinationList the desired parent list of the list item
    * @param {*} droppableSource  react-beautiful-dnd <Droppable/> sourcecontainer
@@ -357,7 +416,7 @@ class DifferentialDiagnosis extends React.Component {
    * Used by react-beautiful-dnd to facilitate the drag-and-drop interaction.
    * Prevents dropping an item out of a valid container, and calls appropriate
    * functions to rearrange list contents depending on the dropped location.
-   * 
+   *
    * @param {*} result representation of dragged items source container and
    * destination container
    */
@@ -391,6 +450,17 @@ class DifferentialDiagnosis extends React.Component {
     }
   }
 
+  requestSave() {
+    if (!this.state.isUnsaved) this.setState({isUnsaved: true});
+    if (this.saveBackoff) {
+      clearTimeout(this.saveBackoff);
+    }
+    this.saveBackoff = setTimeout(() => {
+      this.saveToFHIR();
+      this.setState({isUnsaved: false});
+    }, 5 * 1000);
+  }
+
   /**
    * An asynchronous function to create the appropriate FHIR resource
    * representation of the Differential Diagnosis lists.
@@ -398,6 +468,8 @@ class DifferentialDiagnosis extends React.Component {
   async saveToFHIR() {
     const { FHIR } = this.props;
 
+    
+    this.lastSaveSnapshot = deepClone({listA: this.state.listA, listB: this.state.listB});
     this.setState({ saving: true });
 
     const likelyDiagnoses = await this.createDiagnosisList(
@@ -431,7 +503,7 @@ class DifferentialDiagnosis extends React.Component {
    * Creates the appropriate FHIR Condition resources for each item in a
    * supplied list
    * @param {*} list an array representing a diagnosis list
-   * @param {*} role used to identify the 'Likely' or 'Need to Rule Out' 
+   * @param {*} role used to identify the 'Likely' or 'Need to Rule Out'
    * diagnosis list
    */
   async createDiagnosisList(list, role) {
@@ -505,8 +577,8 @@ class DifferentialDiagnosis extends React.Component {
             ),
             onClick: () => {
               downloadMDAsPDF(this.getMarkDown2(), "DiagnoSys Export.pdf");
-              this.setState({showSideBar: false});
-            }
+              this.setState({ showSideBar: false });
+            },
           },
         ];
         break;
@@ -537,7 +609,7 @@ class DifferentialDiagnosis extends React.Component {
   renderLoading() {
     return (
       <div className="loading">
-        <CircleLoader size={100} />
+        <CircleLoader size={100} color="#FFFFFF" />
       </div>
     );
   }
@@ -546,19 +618,13 @@ class DifferentialDiagnosis extends React.Component {
    * Adds a loading spinner for save button
    */
   renderSave() {
-    const { saving } = this.state;
-    if (saving) {
-      return <FAIButton key="save_button" icon={faSpinner} spin />;
-    }
+    if (!this.props.FHIR.isEnabled) return null;
 
-    return (
-      <FAIButton
-        key="save_button"
-        icon={faSave}
-        title={"Save to FHIR server"}
-        onClick={this.saveToFHIR}
-      />
-    );
+    const { saving, isUnsaved } = this.state;
+
+    if (saving) return <FontAwesomeIcon key="save_icon" size="2x" icon={faGripfire} title="Saving to FHIR server" color="#ffce00" />;
+    if (isUnsaved) return <FAIButton key="save_button" icon={faGripfire} title="Save changes FHIR server" color="#da7676" onClick={this.saveToFHIR}/>;
+    return <FontAwesomeIcon key="save_icon" size="2x" icon={faGripfire} title="Changes are saved to the FHIR server" color="#5dad89" />;
   }
 
   render() {
@@ -573,6 +639,7 @@ class DifferentialDiagnosis extends React.Component {
       this.state.listB.every((row) => row.isNotesOpen);
 
     const pageTitleButtons = [
+      this.renderSave(),
       <FAIButton
         key="toggle_comments_button"
         icon={areAllCommentsOpen ? faCommentsRegular : faCommentsSolid}
@@ -601,7 +668,6 @@ class DifferentialDiagnosis extends React.Component {
             : "Show colour editor"
         }
       />,
-      this.renderSave(),
       <FAIButton
         key="export_button"
         icon={faDownload}
@@ -750,31 +816,34 @@ class DifferentialDiagnosis extends React.Component {
 
 /**
  * TODO: @Luke Wilson
- * @param {*} markdown 
- * @param {*} fileName 
+ * @param {*} markdown
+ * @param {*} fileName
  */
 async function downloadMDAsPDF(markdown, fileName) {
-  
   // input markdown
-  const mdBlob = new Blob([markdown], {type: "text/markdown"});
+  const mdBlob = new Blob([markdown], { type: "text/markdown" });
   const mdFile = new File([mdBlob], "input.md");
 
   // css styling
-  const cssRes = await fetch('/pdf.css');
+  const cssRes = await fetch("/pdf.css");
   const cssBlob = await cssRes.blob();
-  const cssFile = new File([cssBlob], "stylesheet.css")
-  
-  const formData  = new FormData();
+  const cssFile = new File([cssBlob], "stylesheet.css");
+
+  const formData = new FormData();
   formData.append("input_files[]", mdFile);
   formData.append("from", "markdown");
   formData.append("to", "pdf");
   formData.append("css", "stylesheet.css");
   formData.append("other_files[]", cssFile);
 
-  const res = await fetch("https://cors-anywhere.herokuapp.com/http://c.docverter.com/convert", { // a bit of a hack to get around the cors issues for now...
-    method: "POST",
-    body: formData
-  });
+  const res = await fetch(
+    "https://cors-anywhere.herokuapp.com/http://c.docverter.com/convert",
+    {
+      // a bit of a hack to get around the cors issues for now...
+      method: "POST",
+      body: formData,
+    }
+  );
 
   // TODO: check response status code
   const outputBlob = await res.blob();
@@ -795,8 +864,8 @@ function downloadObjectAsJson(exportObj, exportName) {
 
 /**
  * TODO: @Luke Wilson
- * @param {*} string 
- * @param {*} fileName 
+ * @param {*} string
+ * @param {*} fileName
  */
 function downloadStringAsTextFile(string, fileName) {
   var dataString =
@@ -806,8 +875,8 @@ function downloadStringAsTextFile(string, fileName) {
 
 /**
  * TODO: @Luke Wilson
- * @param {*} dataString 
- * @param {*} fileName 
+ * @param {*} dataString
+ * @param {*} fileName
  */
 function doDownload(dataString, fileName) {
   var downloadAnchorNode = document.createElement("a");
@@ -835,6 +904,10 @@ function toggleFullScreen() {
   }
 
   if (requestMethod) requestMethod.call(element);
+}
+
+function deepClone(obj) {
+  return JSON.parse(JSON.stringify(obj));
 }
 
 export default withFHIR(DifferentialDiagnosis);
