@@ -114,7 +114,7 @@ const useFHIR = () => {
    * @param {FHIRResource} name
    */
   const makeRef = (resource) => {
-    return `${iss}/${resource.resourceType}/${resource.id}`;
+    return `/${resource.resourceType}/${resource.id}`;
   };
 
   /**
