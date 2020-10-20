@@ -98,7 +98,7 @@ const Home = (props) => {
    * Search for an EpisodeOfCare resource for this patient and create one if none exists.
    */
   const fetchCreateEpisodeOfCare = async () => {
-    console.log("Loading EP of care...");
+    console.log("Loading latest EP of care for patient", makeRef(patient));
     try {
       let search = await searchResources(
         "EpisodeOfCare",
@@ -109,7 +109,7 @@ const Home = (props) => {
       );
 
       if (search.entry && search.entry.length > 0) {
-        console.log("EP of care", search.entry[0].resource);
+        console.log("Found existing EP of care", search.entry[0].resource);
         setEpisodeOfCare(search.entry[0].resource);
         return;
       }
@@ -120,7 +120,7 @@ const Home = (props) => {
         patient: { reference: makeRef(patient) },
       });
 
-      console.log("EP of care", episodeOfCare);
+      console.log("Created new EP of care", episodeOfCare);
       setEpisodeOfCare(episodeOfCare);
     } catch {
       /* If there are any errors then just disable FHIR and assume we are running external to the EHR */
