@@ -108,6 +108,8 @@ class DifferentialDiagnosis extends React.Component {
     const { FHIR } = this.props;
     const { episodeOfCare } = FHIR;
 
+    console.log("Loading Conditions from EP of care...")
+
     /* Show loader */
     this.setState({ loading: true });  
 
