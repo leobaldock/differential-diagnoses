@@ -470,6 +470,7 @@ class DifferentialDiagnosis extends React.Component {
   async saveToFHIR() {
     const { FHIR } = this.props;
 
+    console.log("Saving to FHIR...")
     
     this.lastSaveSnapshot = deepClone({listA: this.state.listA, listB: this.state.listB});
     this.setState({ saving: true });
@@ -496,6 +497,8 @@ class DifferentialDiagnosis extends React.Component {
         diagnosis,
       }
     );
+
+    console.log("New EP of care", episodeOfCare);
 
     FHIR.setEpisodeOfCare(episodeOfCare);
     this.setState({ saving: false });
