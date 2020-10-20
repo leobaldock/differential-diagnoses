@@ -9,6 +9,15 @@ import queryString from "query-string";
 import FHIR from "../state/fhir";
 import EnvService from "../util/getEnv";
 
+const scopes = [
+  "launch",
+  "launch/patient",
+  "patient/Patient.*",
+  "system/Condition.*",
+  "system/EpisodeOfCare.*",
+  "offline_access",
+];
+
 const Launch = () => {
   const location = useLocation();
   const history = useHistory();
@@ -28,7 +37,6 @@ const Launch = () => {
 
   /* Runs when the application launches */
   useEffect(() => {
-
     const fetchMetadata = () => {
       fetch(`${iss}/metadata/`)
         .then((response) => response.json())
@@ -38,27 +46,25 @@ const Launch = () => {
     };
 
     fetchMetadata();
-
   }, [iss, setMetadata]);
 
   /* Runs when the metadata or launch changes */
   useEffect(() => {
-
     const redirectToAuth = () => {
       const authUri = getSecurityUri("authorize");
-  
+
       /* TODO: don't hardcode this stuff */
       const qs = queryString.stringify({
         authUri: authUri,
         response_type: "code",
         client_id: EnvService.getClientId(),
         redirect_uri: EnvService.getRedirectUri(),
-        scope: "launch",
+        scope: scopes.join("+"),
         state: "test",
         aud: iss,
         launch: params.launch,
       });
-  
+
       console.log("Going to auth...");
       history.push(`/authorize?${qs}`);
     };
@@ -66,11 +72,9 @@ const Launch = () => {
     if (metadata) {
       redirectToAuth();
     }
-
   }, [metadata, getSecurityUri, history, iss, params.launch]);
 
   return <div></div>;
-
 };
 
 export default Launch;
