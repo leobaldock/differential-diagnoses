@@ -519,6 +519,7 @@ class DifferentialDiagnosis extends React.Component {
         const resource = await FHIR.createResource("Condition", {
           resourceType: "Condition",
           subject: { reference: FHIR.makeRef(FHIR.patient) },
+          verificationStatus: "differential",
           code: {
             coding: [
               {
