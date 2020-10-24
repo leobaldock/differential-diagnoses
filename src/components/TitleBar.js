@@ -17,7 +17,10 @@ const TitleBar = ({ title, showLogo, buttons, backgroundColor }) => {
     <div style={style} className="titleBar">
       {showLogo && 
         <div style={{width: "15em"}}>
-          <img style={{maxWidth: "100%", height: "auto"}} src="/diagnosys_logo.png" alt="DiagnoSys Logo"/>
+          <img
+            style={{maxWidth: "100%", height: "auto"}}
+            src="/diagnosys_logo.png"
+            alt="DiagnoSys Logo"/>
         </div>
       }
       {title && <span className="title">{title.toUpperCase()} </span>}

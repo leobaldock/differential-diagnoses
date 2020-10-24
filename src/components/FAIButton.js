@@ -7,7 +7,7 @@ import { faQuestion } from "@fortawesome/free-solid-svg-icons";
  * Wrapper component for FaIcons to make hovering easier. Good for buttons.
  * Will accept all props that the FontAwesomeIcon would normally take.
  * Set the colour using the color prop. Also define a hover colour using the
- *  hoverColor prop. 
+ * hoverColor prop. 
  */
 export default function FAIButton(props) {
     const [isMouseOver, setMouseOver] = useState(false);

@@ -55,7 +55,7 @@ export default class SnomedSearch extends React.Component {
     componentDidMount() {
         document.addEventListener("keydown", this.handleKeyPress);
         
-        // if this is a brand new diagnoses then pop up the search bar
+        // if this is a brand new diagnosis then pop up the search bar
         if (!this.props.content?.code) this.asyncSelect.current.focus();
     }
 
